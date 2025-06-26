@@ -1,0 +1,17 @@
+[package]
+name = "jemmy"
+version = "0.1.0"
+authors = ["Simon Johnston <johnstonskj@gmail.com>"]
+description = "This package provides a coherent set of manual accessor macros."
+documentation = "https://docs.rs/jemmy/"
+repository = "https://github.com/johnstonskj/rust-jemmy.git"
+license = "MIT/Apache-2.0"
+readme = "README.md"
+edition = "2021"
+publish = true
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+paste = "1.0.15"
