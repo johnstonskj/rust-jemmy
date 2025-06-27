@@ -432,8 +432,8 @@ macro_rules! get_mut {
 ///   structure's field.
 /// * This form requires mutability in the form of a mutable reference to self; `&mut self`.
 /// * While the type of the structure's field is `Option<Type>`, the type of the new value
-///   parameter is simply `Type`. The use of this macro is intended to be paired with an
-///  [`unset`] implementation.
+///   parameter is simply `Type`. The use of this macro is intended to be paired with
+///   an [`unset`] implementation.
 /// * This function returns no value.
 ///
 /// The following — commented line and following implementation — are therefore equivalent:
@@ -456,8 +456,8 @@ macro_rules! get_mut {
 ///   name of the structure's field.
 /// * This form requires mutability in the form of a mutable reference to self; `&mut self`.
 /// * While the type of the structure's field is `Option<Type>`, the type of the new value
-///   parameter is simply `Type`. The use of this macro is intended to be paired with an
-///  [`unset`] implementation.
+///   parameter is simply `Type`. The use of this macro is intended to be paired with
+///   an [`unset`] implementation.
 /// * This function returns no value.
 ///
 /// The following — commented line and following implementation — are therefore equivalent:
@@ -714,8 +714,8 @@ macro_rules! unset {
 /// * This form requires mutability in the form of a `mut self`, and returns `Self`, so
 ///   that initializers can be chained.
 /// * While the type of the structure's field is `Option<Type>`, the type of the new value
-///   parameter is simply `Type`. The use of this macro is intended to be paired with an
-///  [`unset`] implementation.
+///   parameter is simply `Type`. The use of this macro is intended to be paired with
+///   an [`unset`] implementation.
 ///
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
@@ -740,8 +740,8 @@ macro_rules! unset {
 /// * This form requires mutability in the form of a `mut self`, and returns `Self`, so
 ///   that initializers can be chained.
 /// * While the type of the structure's field is `Option<Type>`, the type of the new value
-///   parameter is simply `Type`. The use of this macro is intended to be paired with an
-///  [`unset`] implementation.
+///   parameter is simply `Type`. The use of this macro is intended to be paired with
+///   an [`unset`] implementation.
 ///
 /// The following — commented line and following implementation — are therefore equivalent:
 ///

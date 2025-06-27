@@ -9,7 +9,6 @@ This package provides a coherent set of manual accessor macros for fields in str
 [![Coverage Status](https://codecov.io/gh/johnstonskj/rust-jemmy/branch/main/graph/badge.svg?token=1HGN6M4KIT)](https://codecov.io/gh/johnstonskj/rust-jemmy)
 [![Stargazer Count](https://img.shields.io/github/stars/johnstonskj/rust-jemmy.svg)](https://github.com/johnstonskj/rust-jemmy/stargazers)
 
-
 While a number of packages exist to simplify the addition of accessors to Rust structures and enumerations
 these are often derive macros that come with a trade-off between flexibility and control. Jemmy takes a
 different and more flexible approach. It provides a set of very simple leaf macros and then aggregate
@@ -27,7 +26,7 @@ The following shows the basics of the macros for generating accessors for the fi
 will provide initializers, getters and setters for the `number_on_street` and `street_1` fields. A getter,
 setter (value) and unsetter (`None`) will be provided for the `street_2` field.
 
-```
+```rust
 use jemmy::*;
 
 #[derive(Default)]
