@@ -35,13 +35,17 @@ pub enum TypedAddress {
     Home(Address),
     Work(Address),
     Other(Address),
+    Unknown,
 }
 
 impl TypedAddress {
     is_as_variant!(Home => Address);
     is_as_variant!(Work => Address);
     is_as_variant!(Other => Address);
+    is_variant!(Unknown);
 }
+
+impl_from_for_variant!(into Address => TypedAddress, Home);
 
 #[test]
 fn test_address_with_street_1() {
@@ -57,6 +61,22 @@ fn test_address_street_1_setter() {
 }
 
 #[test]
+fn test_address_street_2_setter() {
+    let mut address = Address::default();
+    address.set_street_2("101 My Street".to_string());
+    assert_eq!(address.street_2(), Some(&"101 My Street".to_string()));
+}
+
+#[test]
+fn test_address_street_2_unsetter() {
+    let mut address = Address::default();
+    address.set_street_2("101 My Street".to_string());
+    assert_eq!(address.street_2(), Some(&"101 My Street".to_string()));
+    address.unset_street_2();
+    assert_eq!(address.street_2(), None);
+}
+
+#[test]
 fn test_typed_address_is_as() {
     let typed_address = TypedAddress::Home(Address::default().with_city("Toronto"));
 
@@ -68,4 +88,15 @@ fn test_typed_address_is_as() {
 
     assert!(!typed_address.is_work());
     assert!(!typed_address.is_other());
+}
+
+#[test]
+fn test_from_impl() {
+    let typed_address: TypedAddress = Address::default().with_city("Toronto").into();
+
+    assert!(typed_address.is_home());
+    assert_eq!(
+        typed_address.as_home().unwrap().city(),
+        &"Toronto".to_string()
+    );
 }
