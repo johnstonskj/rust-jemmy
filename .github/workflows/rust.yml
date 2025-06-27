@@ -32,19 +32,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
       
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rs/toolchain@v1.0.6
       with:
         toolchain: stable
         profile: minimal
         override: true
         
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Check publish
-      uses: actions-rs/cargo@v1
+      uses: actions-rs/cargo@v1.0.1
       with:
         command: publish
         args: --package ${{ matrix.package}} --dry-run
@@ -80,25 +80,25 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
       
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rs/toolchain@v1.0.6
       with:
         toolchain: ${{ matrix.rust }}
         profile: minimal
         override: true
         
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Build
-      uses: actions-rs/cargo@v1
+      uses: actions-rs/cargo@v1.0.1
       with:
         command: build
         args: --workspace ${{ matrix.test-features }}
       
     - name: Test
-      uses: actions-rs/cargo@v1
+      uses: actions-rs/cargo@v1.0.1
       with:
         command: test
         args: --workspace ${{ matrix.test-features }}
@@ -115,19 +115,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
       
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rs/toolchain@v1.0.6
       with:
         toolchain: ${{ matrix.rust }}
         profile: minimal
         override: true
         
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Run benchmarks with all features
-      uses: actions-rs/cargo@v1
+      uses: actions-rs/cargo@v1.0.1
       with:
         command: test
         args: --workspace --benches --all-features --no-fail-fast
@@ -144,19 +144,19 @@ jobs:
         rust: ["stable"]
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
       
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rs/toolchain@v1.0.6
       with:
         toolchain: ${{ matrix.rust }}
         profile: minimal
         override: true
         
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Run examples with all features
-      uses: actions-rs/cargo@v1
+      uses: actions-rs/cargo@v1.0.1
       with:
         command: test
         args: --workspace --examples --all-features --no-fail-fast
@@ -172,27 +172,27 @@ jobs:
         rust: ["stable"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1.0.6
         with:
           toolchain: ${{ matrix.rust }}
           override: true
 
       - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
+        uses: actions-rs/tarpaulin@v0.1.0
         with:
           version: 0.22.0
           args: --all-features -- --test-threads 1
 
       - name: Upload to codecov.io
-        uses: codecov/codecov-action@v1.0.2
+        uses: codecov/codecov-action@v5.4.3
         with:
           token: ${{secrets.CODECOV_TOKEN}}
 
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: code-coverage-report
           path: cobertura.xml
@@ -204,19 +204,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
       
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rs/toolchain@v1.0.6
       with:
         toolchain: stable
         profile: minimal
         override: true
         
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Generate documentation
-      uses: actions-rs/cargo@v1
+      uses: actions-rs/cargo@v1.0.1
       env:
         RUSTDOCFLAGS: -D warnings
       with:
@@ -229,20 +229,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
       
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rs/toolchain@v1.0.6
       with:
         toolchain: stable
         profile: minimal
         override: true
         components: rustfmt
               
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2.8.0
 
     - name: Check formatting
-      uses: actions-rs/cargo@v1
+      uses: actions-rs/cargo@v1.0.1
       with:
         command: fmt
         args: --all -- --check
@@ -255,19 +255,19 @@ jobs:
       checks: write
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
       
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rs/toolchain@v1.0.6
       with:
         toolchain: stable
         profile: minimal
         override: true
         components: clippy
               
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2.8.0
 
-    - uses: actions-rs/clippy-check@v1
+    - uses: actions-rs/clippy-check@v1.0.7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --workspace --no-deps --all-features --all-targets -- -D warnings
