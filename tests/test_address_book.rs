@@ -4,7 +4,6 @@ use jemmy::*;
 pub struct Address {
     street_1: String,
     street_2: Option<String>,
-    street_3: Option<String>,
     city: String,
     region_or_state: Option<String>,
     country: Option<String>,
@@ -12,17 +11,8 @@ pub struct Address {
 }
 
 impl Address {
-    with!(pub street_1 => into String);
-    get!(pub street_1 => String);
-    set!(pub street_1 => into String);
-
-    get!(pub street_2 => optional String);
-    set!(pub street_2 => optional String);
-    unset!(pub street_2);
-
-    get!(pub street_3 => optional String);
-    set!(pub street_3 => optional String);
-    unset!(pub street_3);
+    with_get_and_set!(pub street_1 => into String);
+    get_set_and_unset!(pub street_2 => String);
 
     with!(pub city => into String);
     get!(pub city => String);
@@ -48,9 +38,9 @@ pub enum TypedAddress {
 }
 
 impl TypedAddress {
-    is_as_variant!(TypedAddress, Home => Address);
-    is_as_variant!(TypedAddress, Work => Address);
-    is_as_variant!(TypedAddress, Other => Address);
+    is_as_variant!(Home => Address);
+    is_as_variant!(Work => Address);
+    is_as_variant!(Other => Address);
 }
 
 #[test]
@@ -71,7 +61,11 @@ fn test_typed_address_is_as() {
     let typed_address = TypedAddress::Home(Address::default().with_city("Toronto"));
 
     assert!(typed_address.is_home());
-    assert_eq!(typed_address.as_home().unwrap().city(), &"Toronto".to_string());
+    assert_eq!(
+        typed_address.as_home().unwrap().city(),
+        &"Toronto".to_string()
+    );
+
     assert!(!typed_address.is_work());
     assert!(!typed_address.is_other());
 }
