@@ -95,33 +95,13 @@ The elements of these forms are described below.
    */
 
 // ------------------------------------------------------------------------------------------------
-// Accessor Macros ❱ Get | Set | Unset | With
+// Accessor Macros ❱ Get
 // ------------------------------------------------------------------------------------------------
 
 ///
 /// Generate a getter method for a field within a structure.
 //
 /// ## Forms
-///
-/// ### `get!(viz name => Type)`
-///
-/// This form generates an immutable getter method for a field within a structure.
-///
-/// * In this form `name` is both the name of the generated function and the name of the
-///   structure's field.
-/// * The type of the generated function is the reference type `&Type`.
-///
-/// The following — commented line and following implementation — are therefore equivalent:
-///
-/// ```rust
-/// # pub struct Address { street_1: String }
-/// impl Address {
-///     // get!(pub street_1 => String);
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1
-///     }
-/// }
-/// ```
 ///
 /// ### `get!(viz getter_name => field_name, Type)`
 ///
@@ -137,52 +117,37 @@ The elements of these forms are described below.
 /// # pub struct Address { street_or_building: String }
 /// impl Address {
 ///     // get!(pub street_1 => street_or_building, String);
+///
+///     /// Returns a reference to the field `street_1` within this structure.
+///     /// The returned value is an immutable reference `&String`.
 ///     pub const fn street_1(&self) -> &String {
 ///         &self.street_or_building
 ///     }
 /// }
 /// ```
 ///
-/// ### `get!(viz name => optional Type)`
+/// ### `get!(viz name => Type)`
 ///
 /// This form generates an immutable getter method for a field within a structure.
 ///
 /// * In this form `name` is both the name of the generated function and the name of the
 ///   structure's field.
-/// * The type of the generated function is the reference `Option<&Type>`.
+/// * The type of the generated function is the reference type `&Type`.
 ///
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
-/// # pub struct Address { street_2: Option<String>, }
+/// # pub struct Address { street_1: String }
 /// impl Address {
-///     // get!(pub street_2 => optional String);
-///     pub const fn street_2(&self) -> Option<&String> {
-///         self.street_2.as_ref()
+///     // get!(pub street_1 => String);
+///
+///     /// Returns a reference to the field `street_1` within this structure.
+///     /// The returned value is an immutable reference `&String`.
+///     pub const fn street_1(&self) -> &String {
+///         &self.street_1
 ///     }
 /// }
 /// ```
-///
-/// ### `get!(viz getter_name => field_name, optional Type)`
-///
-/// This form generates an immutable getter method for a field within a structure.
-///
-/// * In this form `name` is the name of the generated function while `field_name` is the
-///   name of the structure's field.
-/// * The type of the getter function is the reference `Option<&Type>`.
-///
-/// The following — commented line and following implementation — are therefore equivalent:
-///
-/// ```rust
-/// # pub struct Address { street_additional: Option<String>, }
-/// impl Address {
-///     // get!(pub street_2 => street_additional, optional String);
-///     pub const fn street_2(&self) -> Option<&String> {
-///         self.street_additional.as_ref()
-///     }
-/// }
-/// ```
-///
 ///
 /// ### `get!(viz name => copy Type)`
 ///
@@ -198,6 +163,9 @@ The elements of these forms are described below.
 /// # pub struct Address { number_on_street: u32, }
 /// impl Address {
 ///     // get!(pub number_on_street => copy u32);
+///
+///     /// Returns a reference to the field `number_on_street` within this structure.
+///     /// The returned value is an immutable copy `u32`.
 ///     pub const fn number_on_street(&self) -> u32 {
 ///         self.number_on_street
 ///     }
@@ -218,51 +186,110 @@ The elements of these forms are described below.
 /// # pub struct Address { number: u32, }
 /// impl Address {
 ///     // get!(pub number_on_street => number, copy u32);
+///
+///     /// Returns a reference to the field `number_on_street` within this structure.
+///     /// The returned value is an immutable copy `u32`.
 ///     pub const fn number_on_street(&self) -> u32 {
 ///         self.number
 ///     }
 /// }
 /// ```
 ///
+/// ### `get!(viz name => optional Type)`
+///
+/// This form generates an immutable getter method for a field within a structure.
+///
+/// * In this form `name` is both the name of the generated function and the name of the
+///   structure's field.
+/// * The type of the generated function is the reference `Option<&Type>`.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// # pub struct Address { street_2: Option<String>, }
+/// impl Address {
+///     // get!(pub street_2 => optional String);
+///
+///     /// Returns a reference to the field `street_2` within this structure.
+///     /// The returned value is an optional immutable reference `Option<&String>`.
+///     pub const fn street_2(&self) -> Option<&String> {
+///         self.street_2.as_ref()
+///     }
+/// }
+/// ```
+///
+/// ### `get!(viz getter_name => field_name, optional Type)`
+///
+/// This form generates an immutable getter method for a field within a structure.
+///
+/// * In this form `name` is the name of the generated function while `field_name` is the
+///   name of the structure's field.
+/// * The type of the getter function is the reference `Option<&Type>`.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// # pub struct Address { street_additional: Option<String>, }
+/// impl Address {
+///     // get!(pub street_2 => street_additional, optional String);
+///
+///     /// Returns a reference to the field `street_2` within this structure.
+///     /// The returned value is an optional immutable reference `Option<&String>`.
+///     pub const fn street_2(&self) -> Option<&String> {
+///         self.street_additional.as_ref()
+///     }
+/// }
+/// ```
+///
 #[macro_export]
 macro_rules! get {
-    // Simple form: get!(viz name => Type)
-    ($fn_vis:vis $name:ident => $value_type:ty) => {
-        $fn_vis const fn $name(&self) -> &$value_type {
-            &self.$name
-        }
-    };
-    // Extended form: get!(viz getter_name => field_name, Type)
+    // Base case: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
-        $fn_vis const fn $fn_name(&self) -> &$value_type {
-            &self.$field_name
+        paste::paste! {
+            #[doc = "Returns a reference to the field `" $fn_name "` within this structure. "
+                    "The returned value is an immutable reference `&" $value_type "`"]
+            $fn_vis const fn $fn_name(&self) -> &$value_type {
+                &self.$field_name
+            }
         }
     };
-    // Option form: get!(viz name => optional Type)
-    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
-        $fn_vis const fn $name(&self) -> Option<&$value_type> {
-            self.$name.as_ref()
-        }
+    // Case (2) without *field name*: `viz name => Type`
+    ($fn_vis:vis $name:ident => $value_type:ty) => {
+        $crate::get!($fn_vis $name => $name, $value_type);
     };
-    // Extended form: get!(viz getter_name => field_name, optional Type)
-    ($fn_vis:vis $fn_name:ident => $field_name:ident, optional $value_type:ty) => {
-        $fn_vis const fn $fn_name(&self) -> Option<&$value_type> {
-            self.$field_name.as_ref()
-        }
-    };
-    // Option form: get!(viz name => copy Type)
-    ($fn_vis:vis $name:ident => copy $value_type:ty) => {
-        $fn_vis const fn $name(&self) -> $value_type {
-            self.$name
-        }
-    };
-    // Extended form: get!(viz getter_name => field_name, copy Type)
+    // (3) Base case with *copy*: `viz name => field_name, copy Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, copy $value_type:ty) => {
-        $fn_vis const fn $fn_name(&self) -> $value_type {
-            self.$field_name
+        paste::paste! {
+            #[doc = "Returns the value of the field `" $fn_name "` within this structure. "
+                    "The returned value is an immutable copy `" $value_type "`"]
+            $fn_vis const fn $fn_name(&self) -> $value_type {
+                self.$field_name
+            }
         }
+    };
+    // Case (3) without *field name*: `viz name => copy Type`
+    ($fn_vis:vis $name:ident => copy $value_type:ty) => {
+        $crate::get!($fn_vis $name => $name, copy $value_type);
+    };
+    // (4) Base case with *optional*: `viz name => field_name, optional Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, optional $value_type:ty) => {
+        paste::paste! {
+            #[doc = "Returns a reference to the optional field `" $fn_name "` within this structure. "
+                    "The returned value isan optional immutable reference `Option<&" $value_type ">`"]
+            $fn_vis const fn $fn_name(&self) -> Option<&$value_type> {
+                self.$field_name.as_ref()
+            }
+        }
+    };
+    // Case (4) without *field name*: `viz name => optional Type`
+    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
+        $crate::get!($fn_vis $name => $name, optional $value_type);
     };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Accessor Macros ❱ Get Mutable
+// ------------------------------------------------------------------------------------------------
 
 ///
 /// Generate a mutable getter method for a struct field.
@@ -285,6 +312,9 @@ macro_rules! get {
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // get_mut!(pub street_1 => String);
+///
+///     /// Returns a *mutable* reference to the field `street_1_mut` within this structure.
+///     /// The returned value is a mutable reference `&mut String`.
 ///     pub const fn street_1_mut(&mut self) -> &mut String {
 ///         &mut self.street_1
 ///     }
@@ -306,6 +336,9 @@ macro_rules! get {
 /// # pub struct Address { number_on_street: u32, street_1_string: String, street_2: Option<String> }
 /// impl Address {
 ///     // get_mut!(pub street_1 => street_1_string, String);
+///
+///     /// Returns a *mutable* reference to the field `street_1_mut` within this structure.
+///     /// The returned value is a mutable reference `&mut String`.
 ///     pub const fn street_1_mut(&mut self) -> &mut String {
 ///         &mut self.street_1_string
 ///     }
@@ -315,19 +348,25 @@ macro_rules! get {
 ///
 #[macro_export]
 macro_rules! get_mut {
-    // Simple form: get_mut!(viz name => Type)
-    ($fn_vis:vis $name:ident => $value_type:ty) => {
-        $fn_vis const fn $name(&mut self) -> &mut $value_type {
-            &mut self.$name
+    // Base case: `viz name => field_name, Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
+        paste::paste! {
+            #[doc = "Returns a *mutable* reference to the field `" $fn_name "` within this structure. "
+                    "The returned value is a mutable reference `&mut " $value_type "`."]
+            $fn_vis const fn [< $fn_name _mut >](&mut self) -> &mut $value_type {
+                &mut self.$field_name
+            }
         }
     };
-    // Extended form: get_mut!(viz getter_name => field_name, Type)
-    ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
-        $fn_vis const fn $fn_name(&mut self) -> &mut $value_type {
-            &mut self.$field_name
-        }
+    // Case (2) with *field name*: `viz name => Type`
+    ($fn_vis:vis $name:ident => $value_type:ty) => {
+        $crate::get_mut!($fn_vis $name => $name, $value_type);
     };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Accessor Macros ❱ Set
+// ------------------------------------------------------------------------------------------------
 
 ///
 /// Generate a setter method for a field within a structure.
@@ -350,6 +389,8 @@ macro_rules! get_mut {
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // set!(pub number_on_street => u32);
+///
+///     /// Set the value of the field `number_on_street` within this structure.
 ///     pub fn number_on_street(&mut self, number_on_street: u32) {
 ///         self.number_on_street = number_on_street;
 ///     }
@@ -370,6 +411,8 @@ macro_rules! get_mut {
 /// # pub struct Address { number: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // set!(pub number_on_street => number, u32);
+///
+///     /// Set the value of the field `number_on_street` within this structure.
 ///     pub fn number_on_street(&mut self, number_on_street: u32) {
 ///         self.number = number_on_street;
 ///     }
@@ -395,6 +438,8 @@ macro_rules! get_mut {
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // set!(pub street_1 => into String);
+///
+///     /// Set the value of the field `street_1` within this structure.
 ///     pub fn street_1<T: Into<String>>(&mut self, street_1: T) {
 ///         self.street_1 = street_1.into();
 ///     }
@@ -418,6 +463,8 @@ macro_rules! get_mut {
 /// # pub struct Address { number_on_street: u32, street_1_string: String, street_2: Option<String> }
 /// impl Address {
 ///     // set!(pub street_1 => street_1_string, into String);
+///
+///     /// Set the value of the field `street_1` within this structure.
 ///     pub fn street_1<T: Into<String>>(&mut self, street_1: T) {
 ///         self.street_1_string = street_1.into();
 ///     }
@@ -442,7 +489,11 @@ macro_rules! get_mut {
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // set!(pub street_2 => optional String);
-///     pub fn street_2(&mut self, street_2: String) {
+///
+///     /// Set the value of the field `street_2` within this structure. While the corresponding
+///     /// structure's field is an `Option<String>`, this function uses the type `String`. To
+///     /// set the field value to `None` use the method [`unset_street_2`].
+///      pub fn street_2(&mut self, street_2: String) {
 ///         self.street_2 = Some(street_2);
 ///     }
 /// }
@@ -466,6 +517,10 @@ macro_rules! get_mut {
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2_string: Option<String> }
 /// impl Address {
 ///     // set!(pub street_2 => street_2_string, optional String);
+///
+///     /// Set the value of the field `street_2` within this structure. While the corresponding
+///     /// structure's field is an `Option<String>`, this function uses the type `String`. To
+///     /// set the field value to `None` use the method [`unset_street_2`].
 ///     pub fn street_2(&mut self, street_2: String) {
 ///         self.street_2_string = Some(street_2);
 ///     }
@@ -474,55 +529,71 @@ macro_rules! get_mut {
 ///
 #[macro_export]
 macro_rules! set {
-    // Simple form: set!(viz name => Type)
+    // Base case: `viz name => Type`
     ($fn_vis:vis $name:ident => $value_type:ty) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $name "` within this structure."]
             $fn_vis fn [<set_ $name>](&mut self, value: $value_type) {
                 self.$name = value;
             }
         }
     };
-    // Extended form: set!(viz setter_name => field_name, Type)
+    // Case (2) with *field name*: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $fn_name "` within this structure."]
             $fn_vis fn [<set_ $fn_name>](&mut self, value: $value_type) {
                 self.$field_name = value;
             }
         }
     };
-    // Into form: set!(viz name => into Type)
+    // (3) Base case with *into*: `viz name => into Type`
     ($fn_vis:vis $name:ident => into $value_type:ty) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $name "` within this structure (Using `Into<" $value_type ">`)."]
             $fn_vis fn [<set_ $name>]<T: Into<$value_type>>(&mut self, value: T) {
                 self.$name = value.into();
             }
         }
     };
-    // Extended Into form: set!(viz setter_name => field_name, into Type)
+    // Case (3) with *field name*: `viz name => field_name, into Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, into $value_type:ty) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $fn_name "` within this structure (Using `Into<" $value_type ">`)."]
             $fn_vis fn [<set_ $fn_name>]<T: Into<$value_type>>(&mut self, value: T) {
                 self.$field_name = value.into();
             }
         }
     };
-    // Optional form: set!(viz name => optional Type)
+    // (4) Base case with *optional*: `viz name => optional Type`
     ($fn_vis:vis $name:ident => optional $value_type:ty) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $name "` within this structure. "
+                    "While the corresponding field is an `Option<" $value_type
+                    ">`, this function uses the wrapped type `" $value_type
+                    "`. To set the field value to `None` use the method [`unset_" $name "`]."]
             $fn_vis fn [<set_ $name>](&mut self, value: $value_type) {
                 self.$name = Some(value);
             }
         }
     };
-    // Extended Optional form: set!(viz setter_name => field_name, optional Type)
+    // Case (4) with *field name*: `viz name => field_name, optional Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, optional $value_type:ty) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $fn_name "` within this structure. "
+                    "While the corresponding field is an `Option<" $value_type
+                    ">`, this function uses the wrapped type `" $value_type
+                    "`. To set the field value to `None` use the method [`unset_" $fn_name "`]."]
             $fn_vis fn [<set_ $fn_name>](&mut self, value: $value_type) {
                 self.$field_name = Some(value);
             }
         }
     };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Accessor Macros ❱ Unset
+// ------------------------------------------------------------------------------------------------
 
 ///
 ///  Generate an *un-setter* method for an optional struct field.
@@ -547,6 +618,9 @@ macro_rules! set {
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // unset!(pub street_2);
+///
+///     /// Set the value of the field `street_2` within this structure to `None`. To set
+///     /// the value to `Some(value)`, use the method [`set_street_2`].
 ///     #[inline(always)]
 ///     pub fn street_2(&mut self) {
 ///         self.street_2 = None;
@@ -572,6 +646,9 @@ macro_rules! set {
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2_string: Option<String> }
 /// impl Address {
 ///     // set!(pub street_2 => street_2_string);
+///
+///     /// Set the value of the field `street_2` within this structure to `None`. To set
+///     /// the value to `Some(value)`, use the method [`set_street_2`].
 ///     #[inline(always)]
 ///     pub fn street_2(&mut self) {
 ///         self.street_2_string = None;
@@ -581,25 +658,26 @@ macro_rules! set {
 ///
 #[macro_export]
 macro_rules! unset {
-    // Simple form: unset!(viz name)
-    ($fn_vis:vis $name:ident) => {
-        paste::paste! {
-            #[inline(always)]
-            $fn_vis fn [<unset_ $name>](&mut self,) {
-                self.$name = None;
-            }
-        }
-    };
-    // Extended form: unset!(viz setter_name => field_name)
+    // Base case: `viz name => field_name`
     ($fn_vis:vis $fn_name:ident => $field_name:ident) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $fn_name "` within this structure to `None`. "
+                    "To set the value to `Some(value)`, use the method [`set_" $fn_name "`]."]
             #[inline(always)]
             $fn_vis fn [<unset_ $fn_name>](&mut self) {
                 self.$field_name = None;
             }
         }
     };
+    // Case (2) without *field name*: `viz name`
+    ($fn_vis:vis $name:ident) => {
+        $crate::unset!($fn_vis $name => $name);
+    };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Accessor Macros ❱ With
+// ------------------------------------------------------------------------------------------------
 
 ///
 ///  Generate a builder style initializer method for a struct field.
@@ -623,6 +701,10 @@ macro_rules! unset {
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // with!(pub number_on_street => u32);
+///
+///     /// Set the value of the field `number_on_street` within this structure, usually
+///     /// during construction. This function takes a mutable `self` parameter and returns
+///     /// `Self` allowing it to be chained during construction.
 ///     pub fn with_number_on_street(mut self, number_on_street: u32) -> Self {
 ///         self.number_on_street = number_on_street;
 ///         self
@@ -647,6 +729,10 @@ macro_rules! unset {
 /// # pub struct Address { number: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // with!(pub number_on_street => number, u32);
+///
+///     /// Set the value of the field `number_on_street` within this structure, usually
+///     /// during construction. This function takes a mutable `self` parameter and returns
+///     /// `Self` allowing it to be chained during construction.
 ///     pub fn with_number_on_street(mut self, number_on_street: u32) -> Self {
 ///         self.number = number_on_street;
 ///         self
@@ -697,6 +783,10 @@ macro_rules! unset {
 /// # pub struct Address { number_on_street: u32, street_1_string: String, street_2: Option<String> }
 /// impl Address {
 ///     // with!(pub street_1 => street_1_string, into String);
+///
+///     /// Set the value of the field `number_on_street` within this structure, usually
+///     /// during construction. This function takes a mutable `self` parameter and returns
+///     /// `Self` allowing it to be chained during construction.
 ///     pub fn with_street_1<T: Into<String>>(mut self, street_1: T) -> Self {
 ///         self.street_1_string = street_1.into();
 ///         self
@@ -723,6 +813,10 @@ macro_rules! unset {
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // with!(pub street_2 => optional String);
+///
+///     /// Set the value of the field `number_on_street` within this structure, usually
+///     /// during construction. This function takes a mutable `self` parameter and returns
+///     /// `Self` allowing it to be chained during construction.
 ///     pub fn with_street_2(mut self, street_2: String) -> Self {
 ///         self.street_2 = Some(street_2);
 ///         self
@@ -748,7 +842,11 @@ macro_rules! unset {
 /// ```rust
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2_string: Option<String> }
 /// impl Address {
-///     // with!(pub street_2 => optional String);
+///     // with!(pub street_2 => street_2_string, optional String);
+///
+///     /// Set the value of the field `number_on_street` within this structure, usually
+///     /// during construction. This function takes a mutable `self` parameter and returns
+///     /// `Self` allowing it to be chained during construction.
 ///     pub fn with_street_2(mut self, street_2: String) -> Self {
 ///         self.street_2_string = Some(street_2);
 ///         self
@@ -758,61 +856,59 @@ macro_rules! unset {
 ///
 #[macro_export]
 macro_rules! with {
-    // Simple form: with!(viz name => Type)
-    ($fn_vis:vis $name:ident => $value_type:ty) => {
-        paste::paste! {
-            $fn_vis fn [<with_ $name>](mut self, value: $value_type) -> Self {
-                self.$name = value;
-                self
-            }
-        }
-    };
-    // Extended form: with!(viz with_name => field_name, Type)
+    // Base case: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $fn_name "` within this structure, usually during construction. "
+                    "This function takes a mutable `self` parameter and returns `Self` allowing it to be "
+                    "chained during construction."]
             $fn_vis fn [<with_ $fn_name>](mut self, value: $value_type) -> Self {
                 self.$field_name = value;
                 self
             }
         }
     };
-    // Into form: with!(viz name => into Type)
-    ($fn_vis:vis $name:ident => into $value_type:ty) => {
-        paste::paste! {
-            $fn_vis fn [<with_ $name>]<T: Into<$value_type>>(mut self, value: T) -> Self {
-                self.$name = value.into();
-                self
-            }
-        }
+    // Case (2) without *field name*: `viz name => Type`
+    ($fn_vis:vis $name:ident => $value_type:ty) => {
+        $crate::with!($fn_vis $name => $name, $value_type);
     };
-    // Extended Into form: with!(viz with_name => field_name, into Type)
+    // (3) Base case with *into*: `viz name => field_name, into Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, into $value_type:ty) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $fn_name "` within this structure, usually during construction. "
+                    "This function takes a mutable `self` parameter and returns `Self` allowing it to be "
+                    "chained during construction."]
             $fn_vis fn [<with_ $fn_name>]<T: Into<$value_type>>(mut self, value: T) -> Self {
                 self.$field_name = value.into();
                 self
             }
         }
     };
-    // Optional form: with!(viz name => optional Type)
-    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
-        paste::paste! {
-            $fn_vis fn [<with_ $name>](mut self, value: $value_type) -> Self {
-                self.$name = Some(value);
-                self
-            }
-        }
+    // Case (3) without *field name*: `viz name => into Type`
+    ($fn_vis:vis $name:ident => into $value_type:ty) => {
+        $crate::with!($fn_vis $name => $name, into $value_type);
     };
-    // Extended Optional form: with!(viz with_name => field_name, optional Type)
+    // (4) Base case with *optional*: `viz name => field_name, optional Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, optional $value_type:ty) => {
         paste::paste! {
+            #[doc = "Set the value of the field `" $fn_name "` within this structure, usually during construction. "
+                    "This function takes a mutable `self` parameter and returns `Self` allowing it to be "
+                    "chained during construction."]
             $fn_vis fn [<with_ $fn_name>](mut self, value: $value_type) -> Self {
                 self.$field_name = Some(value);
                 self
             }
         }
     };
+    // Case (4) without *field name*: `viz name => optional Type`
+    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
+        $crate::with!($fn_vis $name => $name, optional $value_type);
+    };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Combinator Macros ❱ Get and Set
+// ------------------------------------------------------------------------------------------------
 
 ///
 /// Generate [get] and [set] for a struct field.
@@ -830,14 +926,12 @@ macro_rules! with {
 ///
 /// ```rust
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
+/// use jemmy::{get, set};
 /// impl Address {
 ///     // get_and_set!(pub street_1 => String);
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1
-///     }
-///     pub fn set_street_1(&mut self, street_1: String) {
-///        self.street_1 = street_1;
-///     }
+///
+///     get!(pub street_1 => String);
+///     set!(pub street_1 => String);
 /// }
 /// ```
 ///
@@ -852,14 +946,12 @@ macro_rules! with {
 ///
 /// ```rust
 /// # pub struct Address { number_on_street: u32, street_1_string: String, street_2: Option<String> }
+/// use jemmy::{get, set};
 /// impl Address {
-///     // get_and_set!(pub street_1 => String);
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1_string
-///     }
-///     pub fn set_street_1(&mut self, street_1: String) {
-///        self.street_1_string = street_1;
-///     }
+///     // get_and_set!(pub street_1 => street_1_string, String);
+///
+///     get!(pub street_1 => street_1_string, String);
+///     set!(pub street_1 => street_1_string, String);
 /// }
 /// ```
 ///
@@ -875,14 +967,12 @@ macro_rules! with {
 ///
 /// ```rust
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
+/// use jemmy::{get, set};
 /// impl Address {
-///     // get_and_set!(pub street_1 => String);
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1
-///     }
-///     pub fn set_street_1<T: Into<String>>(&mut self, street_1: T) {
-///        self.street_1 = street_1.into();
-///     }
+///     // get_and_set!(pub street_1 => into String);
+///
+///     get!(pub street_1 => String);
+///     set!(pub street_1 => into String);
 /// }
 /// ```
 ///
@@ -898,14 +988,12 @@ macro_rules! with {
 ///
 /// ```rust
 /// # pub struct Address { number_on_street: u32, street_1_string: String, street_2: Option<String> }
+/// use jemmy::{get, set};
 /// impl Address {
 ///     // get_and_set!(pub street_1 => street_1_string, String);
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1_string
-///     }
-///     pub fn set_street_1<T: Into<String>>(&mut self, street_1: T) {
-///        self.street_1_string = street_1.into();
-///     }
+///
+///     get!(pub street_1 => street_1_string, String);
+///     set!(pub street_1 => street_1_string, into String);
 /// }
 /// ```
 ///
@@ -921,14 +1009,12 @@ macro_rules! with {
 ///
 /// ```rust
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
+/// use jemmy::{get, set};
 /// impl Address {
 ///     // get_and_set!(pub street_2 => optional String);
-///     pub const fn street_2(&self) -> Option<&String> {
-///         self.street_2.as_ref()
-///     }
-///     pub fn set_street_2(&mut self, street_2: String) {
-///        self.street_2 = Some(street_2);
-///     }
+///
+///     get!(pub street_2 => optional String);
+///     set!(pub street_2 => optional String);
 /// }
 /// ```
 ///
@@ -944,50 +1030,58 @@ macro_rules! with {
 ///
 /// ```rust
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2_string: Option<String> }
+/// use jemmy::{get, set};
 /// impl Address {
 ///     // get_and_set!(pub street_2 => street_2_string, optional String);
-///     pub const fn street_2(&self) -> Option<&String> {
-///         self.street_2_string.as_ref()
-///     }
-///     pub fn set_street_2(&mut self, street_2: String) {
-///        self.street_2_string = Some(street_2);
-///     }
+///
+///     get!(pub street_2 => street_2_string, optional String);
+///     set!(pub street_2 => street_2_string, optional String);
 /// }
 /// ```
 ///
 #[macro_export]
 macro_rules! get_and_set {
-    // Simple form: set!(viz name => Type)
-    ($fn_vis:vis $name:ident => $value_type:ty) => {
-        $crate::get!($fn_vis $name => $value_type);
-        $crate::set!($fn_vis $name => $value_type);
-    };
-    // Extended form: set!(viz setter_name => field_name, Type)
+    // Base case: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
         $crate::get!($fn_vis $fn_name => $field_name, $value_type);
         $crate::set!($fn_vis $fn_name => $field_name, $value_type);
     };
-    // Into form: set!(viz name => into Type)
-    ($fn_vis:vis $name:ident => into $value_type:ty) => {
-        $crate::get!($fn_vis $name => $value_type);
-        $crate::set!($fn_vis $name => into $value_type);
+    // (2) Base case without *field name*: `viz name => Type`
+    ($fn_vis:vis $name:ident => $value_type:ty) => {
+        $crate::get_and_set!($fn_vis $name => $name, $value_type);
     };
-    // Extended Into form: set!(viz setter_name => field_name, into Type)
+    // (3) Base case with *copy*: `viz name => field_name, copy Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, copy $value_type:ty) => {
+        $crate::get!($fn_vis $fn_name => $field_name, copy $value_type);
+        $crate::set!($fn_vis $fn_name => $field_name, $value_type);
+    };
+    // Case (3) without *field name*: `viz name => copy Type`
+    ($fn_vis:vis $name:ident => copy $value_type:ty) => {
+        $crate::get_and_set!($fn_vis $name => $name, copy $value_type);
+    };
+    // (4) Base case with *into*: `viz name => field_name, into Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, into $value_type:ty) => {
         $crate::get!($fn_vis $fn_name => $field_name, $value_type);
         $crate::set!($fn_vis $fn_name => $field_name, into $value_type);
-     };
-    // Optional form: set!(viz name => optional Type)
-    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
-        $crate::get!($fn_vis $name => optional $value_type);
-        $crate::set!($fn_vis $name => optional $value_type);
     };
-    // Extended Optional form: set!(viz setter_name => field_name, optional Type)
+    // Case (4) with *field name*: `viz name => into Type`
+    ($fn_vis:vis $name:ident => into $value_type:ty) => {
+        $crate::get_and_set!($fn_vis $name => $name, into $value_type);
+    };
+    // (5) Base case with *optional*: `viz name => field_name, optional Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, optional $value_type:ty) => {
         $crate::get!($fn_vis $fn_name => $field_name, optional $value_type);
         $crate::set!($fn_vis $fn_name => $field_name, optional $value_type);
     };
+    // Case (5) with *field name*: `viz name => optional Type`
+    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
+        $crate::get_and_set!($fn_vis $name => $name, optional $value_type);
+    };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Combinator Macros ❱ With, Get and Set
+// ------------------------------------------------------------------------------------------------
 
 ///
 /// Generate [with], [get] and [set] for a struct field.
@@ -1005,19 +1099,13 @@ macro_rules! get_and_set {
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
+/// use jemmy::*;
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
-///     // get_and_set!(pub street_1 => String);
-///     pub fn with_street_1(mut self, street_1: String) -> Self {
-///         self.street_1 = street_1;
-///         self
-///     }
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1
-///     }
-///     pub fn set_street_1(&mut self, street_1: String) {
-///        self.street_1 = street_1;
-///     }
+///     // with_get_and_set!(pub street_1 => String);
+///
+///     with!(pub street_1 => String);
+///     get_and_set!(pub street_1 => String);
 /// }
 /// ```
 ///
@@ -1032,19 +1120,13 @@ macro_rules! get_and_set {
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
+/// use jemmy::*;
 /// # pub struct Address { number_on_street: u32, street_1_string: String, street_2: Option<String> }
 /// impl Address {
-///     // get_and_set!(pub street_1 => street_1_string, String);
-///     pub fn with_street_1(mut self, street_1: String) -> Self {
-///         self.street_1_string = street_1;
-///         self
-///     }
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1_string
-///     }
-///     pub fn set_street_1(&mut self, street_1: String) {
-///        self.street_1_string = street_1;
-///     }
+///     // with_get_and_set!(pub street_1 => street_1_string, String);
+///
+///     with!(pub street_1 => street_1_string, String);
+///     get_and_set!(pub street_1 => street_1_string, String);
 /// }
 /// ```
 ///
@@ -1060,19 +1142,13 @@ macro_rules! get_and_set {
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
+/// use jemmy::*;
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
-///     // get_and_set!(pub street_1 => into String);
-///     pub fn with_street_1<T: Into<String>>(mut self, street_1: T) -> Self {
-///         self.street_1 = street_1.into();
-///         self
-///     }
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1
-///     }
-///     pub fn set_street_1<T: Into<String>>(&mut self, street_1: T) {
-///        self.street_1 = street_1.into();
-///     }
+///     // with_get_and_set!(pub street_1 => into String);
+///
+///     with!(pub street_1 => into String);
+///     get_and_set!(pub street_1 => into String);
 /// }
 /// ```
 ///
@@ -1088,19 +1164,13 @@ macro_rules! get_and_set {
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
+/// use jemmy::*;
 /// # pub struct Address { number_on_street: u32, street_1_string: String, street_2: Option<String> }
 /// impl Address {
-///     // get_and_set!(pub street_1 => street_1_string, into String);
-///     pub fn with_street_1<T: Into<String>>(mut self, street_1: T) -> Self {
-///         self.street_1_string = street_1.into();
-///         self
-///     }
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1_string
-///     }
-///     pub fn set_street_1<T: Into<String>>(&mut self, street_1: T) {
-///        self.street_1_string = street_1.into();
-///     }
+///     // with_get_and_set!(pub street_1 => street_1_string, into String);
+///
+///     with!(pub street_1 => street_1_string, into String);
+///     get_and_set!(pub street_1 => street_1_string, into String);
 /// }
 /// ```
 ///
@@ -1116,19 +1186,13 @@ macro_rules! get_and_set {
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
+/// use jemmy::*;
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
-///     // get_and_set!(pub street_1 => optional String);
-///     pub fn with_street_2(mut self, street_2: String) -> Self {
-///         self.street_2 = Some(street_2);
-///         self
-///     }
-///     pub const fn street_2(&self) -> Option<&String> {
-///         self.street_2.as_ref()
-///     }
-///     pub fn set_street_2(&mut self, street_2: String) {
-///        self.street_2 = Some(street_2);
-///     }
+///     // with_get_and_set!(pub street_2 => optional String);
+///
+///     with!(pub street_2 => optional String);
+///     get_and_set!(pub street_2 => optional String);
 /// }
 /// ```
 ///
@@ -1144,55 +1208,63 @@ macro_rules! get_and_set {
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
-/// # pub struct Address { number_on_street: u32, street_1_string: String, street_2: Option<String> }
+/// use jemmy::*;
+/// # pub struct Address { number_on_street: u32, street_1: String, street_2_string: Option<String> }
 /// impl Address {
-///     // get_and_set!(pub street_1 => street_1_string, optional String);
-///     pub fn with_street_1(mut self, street_1: String) -> Self {
-///         self.street_1_string = street_1;
-///         self
-///     }
-///     pub const fn street_1(&self) -> &String {
-///         &self.street_1_string
-///     }
-///     pub fn set_street_1(&mut self, street_1: String) {
-///        self.street_1_string = street_1;
-///     }
+///     // with_get_and_set!(pub street_2 => street_2_string, optional String);
+///
+///     with!(pub street_2 => street_2_string, optional String);
+///     get_and_set!(pub street_2 => street_2_string, optional String);
 /// }
 /// ```
 ///
 #[macro_export]
 macro_rules! with_get_and_set {
-    // Simple form: set!(viz name => Type)
+    // Base case: `viz name => Type`
     ($fn_vis:vis $name:ident => $value_type:ty) => {
         $crate::with!($fn_vis $name => $value_type);
         $crate::get_and_set!($fn_vis $name => $value_type);
     };
-    // Extended form: set!(viz name => field_name, Type)
+    // Case (2) with *field name*: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
         $crate::with!($fn_vis $fn_name => $field_name, $value_type);
         $crate::get_and_set!($fn_vis $fn_name => $field_name, $value_type);
-     };
-    // Into form: set!(viz name => into Type)
+    };
+    // (3) Base case with *copy*: `viz name => copy Type`
+    ($fn_vis:vis $name:ident => copy $value_type:ty) => {
+        $crate::with!($fn_vis $name => copy $value_type);
+        $crate::get_and_set!($fn_vis $name => $value_type);
+    };
+    // Case (3) with *field name*: `viz name => field_name, copy Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, copy $value_type:ty) => {
+        $crate::with!($fn_vis $fn_name => $field_name, copy $value_type);
+        $crate::get_and_set!($fn_vis $fn_name => $field_name, copy $value_type);
+    };
     ($fn_vis:vis $name:ident => into $value_type:ty) => {
+        // (4) Base case with *into*: `viz name => into Type`
         $crate::with!($fn_vis $name => into $value_type);
         $crate::get_and_set!($fn_vis $name => into $value_type);
     };
-    // Extended Into form: set!(viz name => field_name, into Type)
     ($fn_vis:vis $fn_name:ident => $field_name:ident, into $value_type:ty) => {
+        // Case (4) with *field name*: `viz name => field_name, into Type`
         $crate::with!($fn_vis $fn_name => $field_name, into $value_type);
         $crate::get_and_set!($fn_vis $fn_name => $field_name, into $value_type);
-     };
-    // Optional form: set!(viz name => optional Type)
+    };
+    // (5) Base case with *optional*: `viz name => optional Type`
     ($fn_vis:vis $name:ident => optional $value_type:ty) => {
         $crate::with!($fn_vis $name => optional $value_type);
         $crate::get_and_set!($fn_vis $name => optional $value_type);
     };
-    // Extended Optional form: set!(viz name => field_name, optional Type)
+    // Case (5) with *field name*: `viz name => field_name, optional Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, optional $value_type:ty) => {
         $crate::with!($fn_vis $fn_name => $field_name, optional $value_type);
         $crate::get_and_set!($fn_vis $fn_name => $field_name, optional $value_type);
     };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Combinator Macros ❱ Get, Set, and Unset
+// ------------------------------------------------------------------------------------------------
 
 ///
 /// Generate [get], [set], and [unset] for an optional struct field.
@@ -1211,19 +1283,13 @@ macro_rules! with_get_and_set {
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
+/// use jemmy::*;
 /// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
 /// impl Address {
 ///     // get_set_and_unset!(pub street_2 => String);
-///     pub const fn street_2(&self) -> Option<&String> {
-///         self.street_2.as_ref()
-///     }
-///     pub fn set_street_2(&mut self, street_2: String) {
-///        self.street_2 = Some(street_2);
-///     }
-///     #[inline(always)]
-///     pub fn unset_street_2(&mut self) {
-///       self.street_2 = None;
-///     }
+///
+///     get_and_set!(pub street_2 => optional String);
+///     unset!(pub street_2);
 /// }
 /// ```
 ///
@@ -1239,32 +1305,93 @@ macro_rules! with_get_and_set {
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
-/// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
+/// use jemmy::*;
+/// # pub struct Address { number_on_street: u32, street_1: String, street_2_string: Option<String> }
 /// impl Address {
-///     // get_set_and_unset!(pub street_2 => String);
-///     pub const fn street_2(&self) -> Option<&String> {
-///         self.street_2.as_ref()
-///     }
-///     pub fn set_street_2(&mut self, street_2: String) {
-///        self.street_2 = Some(street_2);
-///     }
-///     #[inline(always)]
-///     pub fn unset_street_2(&mut self) {
-///       self.street_2 = None;
-///     }
+///     // get_set_and_unset!(pub street_2 => street_2_string, String);
+///
+///     get_and_set!(pub street_2 => street_2_string, optional String);
+///     unset!(pub street_2 => street_2_string);
 /// }
 /// ```
 ///
 #[macro_export]
 macro_rules! get_set_and_unset {
-    // Simple form: get_set_and_unset!(viz name => Type)
+    // Base case: `viz name => Type`
     ($fn_vis:vis $name:ident => $value_type:ty) => {
         $crate::get_and_set!($fn_vis $name => optional $value_type);
         $crate::unset!($fn_vis $name);
     };
-    // Extended form: get_set_and_unset!(viz name => field_name, Type)
+    // Base case with *field name*: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
         $crate::get_and_set!($fn_vis $fn_name => $field_name, optional $value_type);
+        $crate::unset!($fn_vis $fn_name => $field_name);
+    };
+}
+
+// ------------------------------------------------------------------------------------------------
+// Combinator Macros ❱ With, Get, Set, and Unset
+// ------------------------------------------------------------------------------------------------
+
+///
+/// Generate [with], [get], [set], and [unset] for an optional struct field.
+///
+/// ## Forms
+///
+/// ### `with_get_set_and_unset!(viz name => Type)`
+///
+/// This form generates simple initializer, getter, setter and un-setter functions using the
+/// [with], [get], [set] and [unset] macros.
+///
+/// * In this form `name` is used in both the naming of the generated functions and the
+///   name of as the structure's field.
+/// * Because unset is present, the `optional` keyword is used on the get and set macros.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// use jemmy::*;
+/// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
+/// impl Address {
+///     // with_get_set_and_unset!(pub street_2 => String);
+///
+///     with_get_and_set!(pub street_2 => optional String);
+///     unset!(pub street_2);
+/// }
+/// ```
+///
+/// ### `with_get_set_and_unset!(viz name => field_name, Type)`
+///
+/// This form generates simple initializer, getter, setter and un-setter functions using the
+/// [with], [get], [set] and [unset] macros.
+///
+/// * In this form `name` is used in naming the generated functions while `field_name` is the
+///   name of the structure's field.
+/// * Because unset is present, the `optional` keyword is used on the get and set macros.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// use jemmy::*;
+/// # pub struct Address { number_on_street: u32, street_1: String, street_2_string: Option<String> }
+/// impl Address {
+///     // with_get_set_and_unset!(pub street_2 => street_2_string, String);
+///
+///     with_get_and_set!(pub street_2 => street_2_string, optional String);
+///     unset!(pub street_2 => street_2_string);
+/// }
+/// ```
+///
+#[macro_export]
+macro_rules! with_get_set_and_unset {
+    // Base case: `viz name => Type`
+    ($fn_vis:vis $name:ident => $value_type:ty) => {
+        $crate::with_get_and_set!($fn_vis $name => optional $value_type);
+        $crate::unset!($fn_vis $name);
+    };
+    // Base case with *field name*: `viz name => field_name, Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
+        $crate::with_get_and_set!($fn_vis $fn_name => $field_name, optional $value_type);
         $crate::unset!($fn_vis $fn_name => $field_name);
     };
 }
@@ -1300,11 +1427,14 @@ macro_rules! get_set_and_unset {
 /// | `unset!` | street_2         |          | String | `fn unset_street_2(&mut self)`                                      |
 ///
 pub mod access {
-    pub use crate::{get, get_and_set, get_mut, get_set_and_unset, set, with, with_get_and_set};
+    pub use crate::{
+        get, get_and_set, get_mut, get_set_and_unset, set, with, with_get_and_set,
+        with_get_set_and_unset,
+    };
 }
 
 // ------------------------------------------------------------------------------------------------
-// Variant Macros ❱ is_* | as_*
+// Variant Macros ❱ is_variant
 // ------------------------------------------------------------------------------------------------
 
 ///
@@ -1329,15 +1459,15 @@ pub mod access {
 ///
 /// ```rust
 /// # pub struct Address(String);
-/// # pub enum TypedAddress { Home(Address), Unknown, UnknownAlso }
+/// # pub enum TypedAddress { Home(Address), Unknown, AlsoUnknown }
 /// impl TypedAddress {
 ///     // is_variant!(pub Unknown);
-///     pub const fn is_unknown(&self) -> bool {
-///         matches!(self, Self::Unknown)
-///     }
-///     // is_variant!(pub UnknownAlso => ());
-///     pub const fn is_unknown_also(&self) -> bool {
-///         matches!(self, Self::UnknownAlso)
+///     // or
+///     // is_variant!(pub AlsoUnknown => ());
+///
+///     /// Returns `true` if `self` is an instance of the `Unknown` variant, else `false`.
+///     pub fn is_unknown(&self) -> bool {
+///        matches!(self, Self::Unknown) // or Self::AlsoUnknown
 ///     }
 /// }
 /// ```
@@ -1357,7 +1487,9 @@ pub mod access {
 /// # pub enum TypedAddress { Home(Address), }
 /// impl TypedAddress {
 ///     // is_variant!(pub Home => Address);
-///     pub const fn is_home(&self) -> bool {
+///
+///     /// Returns `true` if `self` is an instance of the `Unknown` variant, else `false`.
+///     pub fn is_home(&self) -> bool {
 ///         matches!(self, Self::Home(_))
 ///     }
 /// }
@@ -1365,9 +1497,11 @@ pub mod access {
 ///
 #[macro_export]
 macro_rules! is_variant {
+    // (1) No-data case: `viz Variant`
     ($fn_vis:vis $variant_name:ident) => {
         $crate::is_variant!($fn_vis $variant_name => ());
     };
+    // Extended (1) No-data case: `viz Variant => ()`
      ($fn_vis:vis $variant_name:ident => ()) => {
         paste::paste! {
             $fn_vis const fn [< is_ $variant_name:snake >](&self) -> bool {
@@ -1375,14 +1509,20 @@ macro_rules! is_variant {
             }
         }
     };
+    // (2) Base data case: `viz Variant => Type`
     ($fn_vis:vis $variant_name:ident => $variant_type:ty) => {
         paste::paste! {
+            #[doc = "Returns `true` if `self` is an instance of the `" $variant_name "` variant, else `false`."]
             $fn_vis const fn [< is_ $variant_name:snake >](&self) -> bool {
                 matches!(self, Self::$variant_name(_))
             }
         }
     };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Variant Macros ❱ as_variant
+// ------------------------------------------------------------------------------------------------
 
 ///
 ///  Generate a *safe cast* method for variant-associated data.
@@ -1403,6 +1543,9 @@ macro_rules! is_variant {
 /// # pub enum TypedAddress { Home(Address), }
 /// impl TypedAddress {
 ///     // as_variant!(pub Home => Address);
+///     
+///     /// If `self` is an instance of the `Home` variant, which holds a value of type
+///     /// `Address`, return an immutable reference `Some(value: &Address)`, else `None`.
 ///     pub const fn as_home(&self) -> Option<&Address> {
 ///         match self {
 ///             Self::Home(value) => Some(value),
@@ -1412,22 +1555,27 @@ macro_rules! is_variant {
 /// }
 /// ```
 ///
-/// ### `as_variant!(viz Variant => value, Type)`
+/// ### `as_variant!(viz Variant => copy Type)`
 ///
-/// This form generates a *safe cast* function for variant-associated data specifically for non-data
-/// associated variants and a distinct value can be substituted.
+/// This form generates a *safe cast* function for variant-associated data.
 ///
-/// * The return type of this method is `Option<Type>`; specifically, if the variant matches it returns
-///   `Some(value)` else `None`.
+/// * If the variant holds a single value of type `Type`, the return type of this methid is therefore
+///   `Option<Type>`; it is `Some(...)` if the variant matches, and `None` otherwise.
+/// * This form requires `Type` implements `Copy`.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
 /// # pub struct Address(String);
-/// # pub enum TypedAddress { Unknown, }
+/// # pub enum TypedAddress { Home(Address), XRef(u64) }
 /// impl TypedAddress {
-///     // as_variant!(pub Unknown => 0, u32);
-///     pub const fn as_unknown(&self) -> Option<u32> {
+///     // as_variant!(pub XRef => copy u64);
+///     
+///     /// If `self` is an instance of the `XRef` variant, which holds a value of type
+///     /// `u64`, return a copy `Some(value: u64)`, else `None`.
+///     pub const fn as_xref(&self) -> Option<u64> {
 ///         match self {
-///             Self::Unknown => Some(0),
+///             Self::XRef(value) => Some(*value),
 ///             _ => None,
 ///         }
 ///     }
@@ -1449,6 +1597,9 @@ macro_rules! is_variant {
 /// # pub enum TypedAddress { Unknown, }
 /// impl TypedAddress {
 ///     // as_variant!(pub Unknown => ());
+///
+///     /// If `self` is an instance of the `" $variant_name "` variant, which holds no value,
+///     /// return `Some(())`, else `None`.
 ///     pub const fn as_unknown(&self) -> Option<()> {
 ///         match self {
 ///             Self::Unknown => Some(()),
@@ -1458,10 +1609,63 @@ macro_rules! is_variant {
 /// }
 /// ```
 ///
+/// ### `as_variant!(viz Variant => value, Type)`
+///
+/// This form generates a *safe cast* function for variant-associated data specifically for non-data
+/// associated variants and a distinct value can be substituted.
+///
+/// * The return type of this method is `Option<Type>`; specifically, if the variant matches it returns
+///   `Some(value)` else `None`.
+///
+/// ```rust
+/// pub enum TypedAddress { Unknown, }
+/// impl TypedAddress {
+///     // as_variant!(pub Unknown => true, bool);
+///
+///     /// If `self` is an instance of the `Unknown` variant, which holds no value, return
+///     /// `Some(true: bool)`, else `None`.
+///     pub const fn as_unknown(&self) -> Option<bool> {
+///         match self {
+///             Self::Unknown => Some(true),
+///             _ => None,
+///         }
+///     }
+/// }
+/// ```
+///
+/// ### `as_variant!(viz Variant => const value, Type)`
+///
+/// This form generates a *safe cast* function for variant-associated data specifically for non-data
+/// associated variants and a distinct value can be substituted.
+///
+/// * The return type of this method is `Option<Type>`; specifically, if the variant matches it returns
+///   `Some(value)` else `None`.
+/// * The caller is responsible for ensuring that the value provided **is** in fact a constant.
+///
+/// ```rust
+/// pub enum TypedAddress { Unknown, }
+/// impl TypedAddress {
+///     // as_variant!(pub Unknown => true, bool);
+///
+///     /// If `self` is an instance of the `Unknown` variant, which holds no value, return
+///     /// `Some(true: bool)`, else `None`.
+///     pub const fn as_unknown(&self) -> Option<bool> {
+///         const CONST_VALUE: Option<bool> = Some(true);
+///         match self {
+///             Self::Unknown => CONST_VALUE,
+///             _ => None,
+///         }
+///     }
+/// }
+/// ```
+///
 #[macro_export]
 macro_rules! as_variant {
+    // Base case: `viz Variant => Type`
     ($fn_vis:vis $variant_name:ident => $variant_type:ty) => {
         paste::paste! {
+            #[doc = "If `self` is an instance of the `" $variant_name "` variant, which holds a value of type `"
+                    $variant_type "`, return an immutable reference `Some(value: &" $variant_type ")`, else `None`."]
             $fn_vis const fn [< as_ $variant_name:snake >](&self) -> Option<&$variant_type> {
                 match self {
                     Self::$variant_name(value) => Some(value),
@@ -1470,8 +1674,24 @@ macro_rules! as_variant {
             }
         }
     };
+    // Base case with *copy*: `viz Variant => copy Type`
+    ($fn_vis:vis $variant_name:ident => copy $variant_type:ty) => {
+        paste::paste! {
+            #[doc = "If `self` is an instance of the `" $variant_name "` variant, which holds a value of type `"
+                    $variant_type "`, return a copy `Some(value: " $variant_type ")`, else `None`."]
+            $fn_vis const fn [< as_ $variant_name:snake >](&self) -> Option<$variant_type> {
+                match self {
+                    Self::$variant_name(value) => Some(*value),
+                    _ => None,
+                }
+            }
+        }
+    };
+    // Base case without type: `viz Variant => ()`
     ($fn_vis:vis $variant_name:ident => ()) => {
         paste::paste! {
+            #[doc = "If `self` is an instance of the `" $variant_name "` variant, which holds no value, "
+                    "return `Some(())`, else `None`."]
             $fn_vis const fn [< as_ $variant_name:snake >](&self) -> Option<()> {
                 match self {
                     Self::$variant_name => Some(()),
@@ -1480,8 +1700,11 @@ macro_rules! as_variant {
             }
         }
     };
+    // Base case with *value*: `viz Variant => value, Type`
     ($fn_vis:vis $variant_name:ident => $value:expr, $value_type:ty) => {
         paste::paste! {
+            #[doc = "If `self` is an instance of the `" $variant_name "` variant, which holds no value, "
+                    "return `Some(" $value ": " $variant_type ")`, else `None`."]
             $fn_vis const fn [< as_ $variant_name:snake >](&self) -> Option<$variant_type> {
                 match self {
                     Self::$variant_name => Some($value),
@@ -1490,7 +1713,25 @@ macro_rules! as_variant {
             }
         }
     };
+    // Base case with *const value*: `viz Variant => const value, Type`
+    ($fn_vis:vis $variant_name:ident => $value:expr, $value_type:ty) => {
+        paste::paste! {
+            #[doc = "If `self` is an instance of the `" $variant_name "` variant, which holds no value, "
+                    "return `Some(" $value ": " $variant_type ")`, else `None`."]
+            $fn_vis const fn [< as_ $variant_name:snake >](&self) -> Option<$variant_type> {
+                const CONST_VALUE: Option<$value_type> = Some($value);
+                match self {
+                    Self::$variant_name => CONST_VALUE,
+                    _ => None,
+                }
+            }
+        }
+    };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Combinator Macros ❱ is_as_variant
+// ------------------------------------------------------------------------------------------------
 
 ///
 ///  Generate both [is_variant] and [as_variant] for an enumeration variant.
@@ -1504,28 +1745,51 @@ macro_rules! as_variant {
 /// The following — commented line and following implementation — are therefore equivalent:
 ///
 /// ```rust
+/// use jemmy::*;
 /// # pub struct Address(String);
 /// # pub enum TypedAddress { Home(Address), }
 /// impl TypedAddress {
 ///     // is_as_variant!(pub Home => Address);
-///     pub const fn is_home(&self) -> bool {
-///         matches!(self, Self::Home(_))
-///     }
-///     pub const fn as_home(&self) -> Option<&Address> {
-///         match self {
-///             Self::Home(value) => Some(value),
-///             _ => None,
-///         }
-///     }
+///
+///     is_variant!(pub Home => Address);
+///     as_variant!(pub Home => Address);
+/// }
+/// ```
+///
+/// ### `is_as_variant!(viz Enum, Variant => copy Type)`
+///
+/// This form generates both `is_variant` and `as_variant` for the applicable cases.
+///
+/// * This form requires `Type` implements `Copy`.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// use jemmy::*;
+/// # pub struct Address(String);
+/// # pub enum TypedAddress { Home(Address), XRef(u64) }
+/// impl TypedAddress {
+///     // is_as_variant!(pub XRef => copy u64);
+///
+///     is_variant!(pub XRef => u64);
+///     as_variant!(pub XRef => copy u64);
 /// }
 /// ```
 ///
 #[macro_export]
 macro_rules! is_as_variant {
+    // Base case: `viz Variant => Type`
     ($fn_vis:vis $variant_name:ident => $variant_type:ty) => {
         paste::paste! {
             $crate::is_variant!($fn_vis $variant_name => $variant_type);
             $crate::as_variant!($fn_vis $variant_name => $variant_type);
+        }
+    };
+    // Base case with *copy*: `viz Variant => copy Type`
+    ($fn_vis:vis $variant_name:ident => copy $variant_type:ty) => {
+        paste::paste! {
+            $crate::is_variant!($fn_vis $variant_name => $variant_type);
+            $crate::as_variant!($fn_vis $variant_name => copy $variant_type);
         }
     };
 }
@@ -1575,6 +1839,7 @@ macro_rules! is_as_variant {
 ///
 #[macro_export]
 macro_rules! impl_from_for_variant {
+    // Base case: `impl From<Type> for Enum => Enum::Variant(value:Type)`
     ($value_type:ty => $enum_type:ty, $variant_name:ident) => {
         impl From<$value_type> for $enum_type {
             fn from(value: $value_type) -> Self {
@@ -1582,6 +1847,7 @@ macro_rules! impl_from_for_variant {
             }
         }
     };
+    // Base case with *into*: `From<T> where T: Into<Type>`
     (into $value_type:ty => $enum_type:ty, $variant_name:ident) => {
         impl<T: Into<$value_type>> From<T> for $enum_type {
             fn from(value: T) -> Self {
@@ -1606,6 +1872,7 @@ macro_rules! impl_from_for_variant {
 ///     Home(Address),
 ///     Work(Address),
 ///     Unparsed(String),
+///     XRef(u64),
 ///     Unknown
 /// }
 /// ```

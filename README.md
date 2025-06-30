@@ -131,6 +131,12 @@ The elements of these forms are described below.
 
 ## Changes
 
+### Version 0.1.3
+
+* Feature: added `#[doc]` to all generated methods.
+* Feature: added new options to `with_get_and_set!`.
+* Feature: added new macro `with_get_set_and_unset!`.
+
 ### Version 0.1.2
 
 Minor improvements and completed documentation.

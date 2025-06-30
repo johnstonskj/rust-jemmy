@@ -2,8 +2,8 @@ use jemmy::*;
 
 #[derive(Default)]
 pub struct Address {
-    street_1: String,
-    street_2: Option<String>,
+    street: String,
+    street_additional: Option<String>,
     city: String,
     region_or_state: Option<String>,
     country: Option<String>,
@@ -11,8 +11,8 @@ pub struct Address {
 }
 
 impl Address {
-    with_get_and_set!(pub street_1 => into String);
-    get_set_and_unset!(pub street_2 => String);
+    with_get_and_set!(pub street_1 => street, into String);
+    get_set_and_unset!(pub street_2 => street_additional, String);
 
     with!(pub city => into String);
     get!(pub city => String);
