@@ -131,6 +131,15 @@ The elements of these forms are described below.
 
 ## Changes
 
+### Version 0.1.5
+
+* Fix: macro implementations:
+  * Correct comment for `set!` macro case 4
+  * Fix `with_get_and_set!` implementation for copy types
+  * Reorder `as_variant!` cases to prioritize empty variant handling
+* Documentation: in `as_variant!` macro
+* Test: add comprehensive tests for various macro use cases
+
 ### Version 0.1.4
 
 * Feature: added `optional copy` and `optional into` for core macros.
