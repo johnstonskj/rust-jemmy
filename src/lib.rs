@@ -699,7 +699,7 @@ macro_rules! set {
             }
         }
     };
-    // Case (4) without *field name*: `viz name => optional Type`
+    // Case (4) without *field name*: `viz name => optional into Type`
     ($fn_vis:vis $name:ident => optional into $value_type:ty) => {
         $crate::set!($fn_vis $name => $name, optional into $value_type);
     };
@@ -1379,7 +1379,7 @@ macro_rules! with_get_and_set {
     };
     // (3) Base case with *copy*: `viz name => field_name, copy Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, copy $value_type:ty) => {
-        $crate::with!($fn_vis $fn_name => $field_name, copy $value_type);
+        $crate::with!($fn_vis $fn_name => $field_name, $value_type);
         $crate::get_and_set!($fn_vis $fn_name => $field_name, copy $value_type);
     };
     // Case (3) without *field name*: `viz name => copy Type`
@@ -1821,6 +1821,20 @@ macro_rules! is_variant {
 ///
 #[macro_export]
 macro_rules! as_variant {
+    // Base case without type: `viz Variant => ()`
+    // NOTE: this has to come first or `expr` consumes `()`.
+    ($fn_vis:vis $variant_name:ident => ()) => {
+        paste::paste! {
+            #[doc = "If `self` is an instance of the `" $variant_name "` variant, which holds no value, "
+                    "return `Some(())`, else `None`."]
+            $fn_vis const fn [< as_ $variant_name:snake >](&self) -> Option<()> {
+                match self {
+                    Self::$variant_name => Some(()),
+                    _ => None,
+                }
+            }
+        }
+    };
     // Base case: `viz Variant => Type`
     ($fn_vis:vis $variant_name:ident => $variant_type:ty) => {
         paste::paste! {
@@ -1847,25 +1861,12 @@ macro_rules! as_variant {
             }
         }
     };
-    // Base case without type: `viz Variant => ()`
-    ($fn_vis:vis $variant_name:ident => ()) => {
-        paste::paste! {
-            #[doc = "If `self` is an instance of the `" $variant_name "` variant, which holds no value, "
-                    "return `Some(())`, else `None`."]
-            $fn_vis const fn [< as_ $variant_name:snake >](&self) -> Option<()> {
-                match self {
-                    Self::$variant_name => Some(()),
-                    _ => None,
-                }
-            }
-        }
-    };
     // Base case with *value*: `viz Variant => value, Type`
     ($fn_vis:vis $variant_name:ident => $value:expr, $value_type:ty) => {
         paste::paste! {
             #[doc = "If `self` is an instance of the `" $variant_name "` variant, which holds no value, "
-                    "return `Some(" $value ": " $variant_type ")`, else `None`."]
-            $fn_vis const fn [< as_ $variant_name:snake >](&self) -> Option<$variant_type> {
+                    "return `Some(" $value ": " $value_type ")`, else `None`."]
+            $fn_vis const fn [< as_ $variant_name:snake >](&self) -> Option<$value_type> {
                 match self {
                     Self::$variant_name => Some($value),
                     _ => None,
