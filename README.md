@@ -131,6 +131,12 @@ The elements of these forms are described below.
 
 ## Changes
 
+### Version 0.1.4
+
+* Feature: added `optional copy` and `optional into` for core macros.
+* Documentation: most of the docs for the above are also added.
+* Test: test_shorts is now the more useful version of the doc tests.
+
 ### Version 0.1.3
 
 * Feature: added `#[doc]` to all generated methods.

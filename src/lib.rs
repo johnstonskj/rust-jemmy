@@ -241,6 +241,52 @@ The elements of these forms are described below.
 /// }
 /// ```
 ///
+/// ### `get!(viz name => optional copy Type)`
+///
+/// This form generates an immutable getter method for a field within a structure.
+///
+/// * In this form `name` is both the name of the generated function and the name of the
+///   structure's field.
+/// * The type of the generated function is the reference `Option<Type>`, assuming `Type` implements `Copy`.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// # pub struct Address { unit: Option<u32>, }
+/// impl Address {
+///     // get!(pub unit => optional u32);
+///
+///     /// Returns a reference to the field `unit` within this structure.
+///     /// The returned value is an optional immutable copy `Option<u32>`.
+///     pub const fn unit(&self) -> Option<u32> {
+///         self.unit
+///     }
+/// }
+/// ```
+///
+/// ### `get!(viz getter_name => field_name, optional copy Type)`
+///
+/// This form generates an immutable getter method for a field within a structure.
+///
+/// * In this form `name` is the name of the generated function while `field_name` is the
+///   name of the structure's field.
+/// * The type of the getter function is the reference `Option<Type>`, assuming `Type` implements `Copy`.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// # pub struct Address { unit_number: Option<u32>, }
+/// impl Address {
+///     // get!(pub unit => unit_number, optional u32);
+///
+///     /// Returns a reference to the field `unit` within this structure.
+///     /// The returned value is an optional immutable copy `Option<u32>`.
+///     pub const fn unit(&self) -> Option<u32> {
+///         self.unit_number
+///     }
+/// }
+/// ```
+///
 #[macro_export]
 macro_rules! get {
     // Base case: `viz name => field_name, Type`
@@ -275,7 +321,7 @@ macro_rules! get {
     ($fn_vis:vis $fn_name:ident => $field_name:ident, optional $value_type:ty) => {
         paste::paste! {
             #[doc = "Returns a reference to the optional field `" $fn_name "` within this structure. "
-                    "The returned value isan optional immutable reference `Option<&" $value_type ">`"]
+                    "The returned value is an optional immutable reference `Option<&" $value_type ">`"]
             $fn_vis const fn $fn_name(&self) -> Option<&$value_type> {
                 self.$field_name.as_ref()
             }
@@ -284,6 +330,20 @@ macro_rules! get {
     // Case (4) without *field name*: `viz name => optional Type`
     ($fn_vis:vis $name:ident => optional $value_type:ty) => {
         $crate::get!($fn_vis $name => $name, optional $value_type);
+    };
+    // (5) Case (3) with *copy*: `viz name => field_name, optional copy Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, optional copy $value_type:ty) => {
+        paste::paste! {
+            #[doc = "Returns a reference to the optional field `" $fn_name "` within this structure. "
+                    "The returned value is an optional, immutable, copy `Option<" $value_type ">`"]
+            $fn_vis const fn $fn_name(&self) -> Option<$value_type> {
+                self.$field_name
+            }
+        }
+    };
+    // Case (5) without *field name*: `viz name => optional copy Type`
+    ($fn_vis:vis $name:ident => optional copy $value_type:ty) => {
+        $crate::get!($fn_vis $name => $name, optional copy $value_type);
     };
 }
 
@@ -527,18 +587,65 @@ macro_rules! get_mut {
 /// }
 /// ```
 ///
+/// ### `set!(viz name => optional into Type)`
+///
+/// This form generates a simple setter function, for optional fields.
+///
+/// * In this form `name` is both the name of the generated function and the name of the
+///   structure's field.
+/// * This form requires mutability in the form of a mutable reference to self; `&mut self`.
+/// * While the type of the structure's field is `Option<Type>`, the type of the new value
+///   parameter is simply `Type`. The use of this macro is intended to be paired with
+///   an [`unset`] implementation.
+/// * This function returns no value.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// # pub struct Address { number_on_street: u32, street_1: String, street_2: Option<String> }
+/// impl Address {
+///     // set!(pub street_2 => optional into String);
+///
+///     /// Set the value of the field `street_2` within this structure. While the corresponding
+///     /// structure's field is an `Option<String>`, this function uses the type `String`. To
+///     /// set the field value to `None` use the method [`unset_street_2`].
+///      pub fn street_2<T: Into<String>>(&mut self, street_2: T) {
+///         self.street_2 = Some(street_2.into());
+///     }
+/// }
+/// ```
+///
+/// ### `set!(viz setter_name => field_name, optional into Type)`
+///
+/// This form generates a simple setter function, for optional fields.
+///
+/// * In this form `name` is the name of the generated function while `field_name` is the
+///   name of the structure's field.
+/// * This form requires mutability in the form of a mutable reference to self; `&mut self`.
+/// * While the type of the structure's field is `Option<Type>`, the type of the new value
+///   parameter is simply `Type`. The use of this macro is intended to be paired with
+///   an [`unset`] implementation.
+/// * This function returns no value.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// # pub struct Address { number_on_street: u32, street_1: String, street_2_string: Option<String> }
+/// impl Address {
+///     // set!(pub street_2 => street_2_string, optional into String);
+///
+///     /// Set the value of the field `street_2` within this structure. While the corresponding
+///     /// structure's field is an `Option<String>`, this function uses the type `String`. To
+///     /// set the field value to `None` use the method [`unset_street_2`].
+///     pub fn street_2<T: Into<String>>(&mut self, street_2: T) {
+///         self.street_2_string = Some(street_2.into());
+///     }
+/// }
+/// ```
+///
 #[macro_export]
 macro_rules! set {
-    // Base case: `viz name => Type`
-    ($fn_vis:vis $name:ident => $value_type:ty) => {
-        paste::paste! {
-            #[doc = "Set the value of the field `" $name "` within this structure."]
-            $fn_vis fn [<set_ $name>](&mut self, value: $value_type) {
-                self.$name = value;
-            }
-        }
-    };
-    // Case (2) with *field name*: `viz name => field_name, Type`
+    // Base case: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
         paste::paste! {
             #[doc = "Set the value of the field `" $fn_name "` within this structure."]
@@ -547,16 +654,11 @@ macro_rules! set {
             }
         }
     };
-    // (3) Base case with *into*: `viz name => into Type`
-    ($fn_vis:vis $name:ident => into $value_type:ty) => {
-        paste::paste! {
-            #[doc = "Set the value of the field `" $name "` within this structure (Using `Into<" $value_type ">`)."]
-            $fn_vis fn [<set_ $name>]<T: Into<$value_type>>(&mut self, value: T) {
-                self.$name = value.into();
-            }
-        }
+    // Base Case without *field name*: `viz name => Type`
+    ($fn_vis:vis $name:ident => $value_type:ty) => {
+        $crate::set!($fn_vis $name => $name, $value_type);
     };
-    // Case (3) with *field name*: `viz name => field_name, into Type`
+    // (2) Base case with *into*: `viz name => field_name, into Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, into $value_type:ty) => {
         paste::paste! {
             #[doc = "Set the value of the field `" $fn_name "` within this structure (Using `Into<" $value_type ">`)."]
@@ -565,19 +667,11 @@ macro_rules! set {
             }
         }
     };
-    // (4) Base case with *optional*: `viz name => optional Type`
-    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
-        paste::paste! {
-            #[doc = "Set the value of the field `" $name "` within this structure. "
-                    "While the corresponding field is an `Option<" $value_type
-                    ">`, this function uses the wrapped type `" $value_type
-                    "`. To set the field value to `None` use the method [`unset_" $name "`]."]
-            $fn_vis fn [<set_ $name>](&mut self, value: $value_type) {
-                self.$name = Some(value);
-            }
-        }
+    // Case (2) without *field name*: `viz name => into Type`
+    ($fn_vis:vis $name:ident => into $value_type:ty) => {
+        $crate::set!($fn_vis $name => $name, into $value_type);
     };
-    // Case (4) with *field name*: `viz name => field_name, optional Type`
+    // (3) Base case with *optional*: `viz name => field_name, optional Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, optional $value_type:ty) => {
         paste::paste! {
             #[doc = "Set the value of the field `" $fn_name "` within this structure. "
@@ -588,6 +682,26 @@ macro_rules! set {
                 self.$field_name = Some(value);
             }
         }
+    };
+    // Case (3) with *field name*: `viz name => optional Type`
+    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
+        $crate::set!($fn_vis $name => $name, optional $value_type);
+    };
+    // (4) Case (3) with *into*: `viz name => field_name, optional into Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, optional into $value_type:ty) => {
+        paste::paste! {
+            #[doc = "Set the value of the field `" $fn_name "` within this structure. "
+                    "While the corresponding field is an `Option<" $value_type
+                    ">`, this function uses the type `Into<" $value_type
+                    ">`. To set the field value to `None` use the method [`unset_" $fn_name "`]."]
+            $fn_vis fn [<set_ $fn_name>]<T: Into<$value_type>>(&mut self, value: T) {
+                self.$field_name = Some(value.into());
+            }
+        }
+    };
+    // Case (4) without *field name*: `viz name => optional Type`
+    ($fn_vis:vis $name:ident => optional into $value_type:ty) => {
+        $crate::set!($fn_vis $name => $name, optional into $value_type);
     };
 }
 
@@ -904,6 +1018,22 @@ macro_rules! with {
     ($fn_vis:vis $name:ident => optional $value_type:ty) => {
         $crate::with!($fn_vis $name => $name, optional $value_type);
     };
+    // (5) Case (4) with *into*: `viz name => field_name, optional into Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, optional into $value_type:ty) => {
+        paste::paste! {
+            #[doc = "Set the value of the field `" $fn_name "` within this structure, usually during construction. "
+                    "This function takes a mutable `self` parameter and returns `Self` allowing it to be "
+                    "chained during construction."]
+            $fn_vis fn [<with_ $fn_name>]<T: Into<$value_type>>(mut self, value: T) -> Self {
+                self.$field_name = Some(value.into());
+                self
+            }
+        }
+    };
+    // Case (5) without *field name*: `viz name => optional into Type`
+    ($fn_vis:vis $name:ident => optional into $value_type:ty) => {
+        $crate::with!($fn_vis $name => $name, optional into $value_type);
+    };
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1064,7 +1194,7 @@ macro_rules! get_and_set {
         $crate::get!($fn_vis $fn_name => $field_name, $value_type);
         $crate::set!($fn_vis $fn_name => $field_name, into $value_type);
     };
-    // Case (4) with *field name*: `viz name => into Type`
+    // Case (4) without *field name*: `viz name => into Type`
     ($fn_vis:vis $name:ident => into $value_type:ty) => {
         $crate::get_and_set!($fn_vis $name => $name, into $value_type);
     };
@@ -1073,9 +1203,27 @@ macro_rules! get_and_set {
         $crate::get!($fn_vis $fn_name => $field_name, optional $value_type);
         $crate::set!($fn_vis $fn_name => $field_name, optional $value_type);
     };
-    // Case (5) with *field name*: `viz name => optional Type`
+    // Case (5) without *field name*: `viz name => optional Type`
     ($fn_vis:vis $name:ident => optional $value_type:ty) => {
         $crate::get_and_set!($fn_vis $name => $name, optional $value_type);
+    };
+    // (6) Case (5) with *copy*: `viz name => field_name, optional copy Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, optional copy $value_type:ty) => {
+        $crate::get!($fn_vis $fn_name => $field_name, optional copy $value_type);
+        $crate::set!($fn_vis $fn_name => $field_name, optional $value_type);
+    };
+    // Case (6) without *field name*: `viz name => optional copy Type`
+    ($fn_vis:vis $name:ident => optional copy $value_type:ty) => {
+        $crate::get_and_set!($fn_vis $name => $name, optional copy $value_type);
+    };
+    // (7) Case (5) with *copy*: `viz name => field_name, optional into Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, optional into $value_type:ty) => {
+        $crate::get!($fn_vis $fn_name => $field_name, optional $value_type);
+        $crate::set!($fn_vis $fn_name => $field_name, optional into $value_type);
+    };
+    // Case (7) without *field name*: `viz name => optional into Type`
+    ($fn_vis:vis $name:ident => optional into $value_type:ty) => {
+        $crate::get_and_set!($fn_vis $name => $name, optional into $value_type);
     };
 }
 
@@ -1220,45 +1368,59 @@ macro_rules! get_and_set {
 ///
 #[macro_export]
 macro_rules! with_get_and_set {
-    // Base case: `viz name => Type`
-    ($fn_vis:vis $name:ident => $value_type:ty) => {
-        $crate::with!($fn_vis $name => $value_type);
-        $crate::get_and_set!($fn_vis $name => $value_type);
-    };
-    // Case (2) with *field name*: `viz name => field_name, Type`
+    // Base case: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
         $crate::with!($fn_vis $fn_name => $field_name, $value_type);
         $crate::get_and_set!($fn_vis $fn_name => $field_name, $value_type);
     };
-    // (3) Base case with *copy*: `viz name => copy Type`
-    ($fn_vis:vis $name:ident => copy $value_type:ty) => {
-        $crate::with!($fn_vis $name => copy $value_type);
-        $crate::get_and_set!($fn_vis $name => $value_type);
+    // Case (2) without *field name*: `viz name => Type`
+    ($fn_vis:vis $name:ident => $value_type:ty) => {
+        $crate::with_get_and_set!($fn_vis $name => $name, $value_type);
     };
-    // Case (3) with *field name*: `viz name => field_name, copy Type`
+    // (3) Base case with *copy*: `viz name => field_name, copy Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, copy $value_type:ty) => {
         $crate::with!($fn_vis $fn_name => $field_name, copy $value_type);
         $crate::get_and_set!($fn_vis $fn_name => $field_name, copy $value_type);
     };
-    ($fn_vis:vis $name:ident => into $value_type:ty) => {
-        // (4) Base case with *into*: `viz name => into Type`
-        $crate::with!($fn_vis $name => into $value_type);
-        $crate::get_and_set!($fn_vis $name => into $value_type);
+    // Case (3) without *field name*: `viz name => copy Type`
+    ($fn_vis:vis $name:ident => copy $value_type:ty) => {
+        $crate::with_get_and_set!($fn_vis $name => $name, copy $value_type);
     };
+    // (4) Base case with *into*: `viz name => field_name, into Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, into $value_type:ty) => {
-        // Case (4) with *field name*: `viz name => field_name, into Type`
         $crate::with!($fn_vis $fn_name => $field_name, into $value_type);
         $crate::get_and_set!($fn_vis $fn_name => $field_name, into $value_type);
     };
-    // (5) Base case with *optional*: `viz name => optional Type`
-    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
-        $crate::with!($fn_vis $name => optional $value_type);
-        $crate::get_and_set!($fn_vis $name => optional $value_type);
+    // Case (4) without *field name*: `viz name => into Type`
+    ($fn_vis:vis $name:ident => into $value_type:ty) => {
+        $crate::with_get_and_set!($fn_vis $name => $name, into $value_type);
     };
-    // Case (5) with *field name*: `viz name => field_name, optional Type`
+    // (5) Base case with *optional*: `viz name => field_name, optional Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, optional $value_type:ty) => {
         $crate::with!($fn_vis $fn_name => $field_name, optional $value_type);
         $crate::get_and_set!($fn_vis $fn_name => $field_name, optional $value_type);
+    };
+    // Case (5) without *field name*: `viz name => optional Type`
+    ($fn_vis:vis $name:ident => optional $value_type:ty) => {
+        $crate::with_get_and_set!($fn_vis $name => $name, optional $value_type);
+    };
+    // (6) Case (5) with *copy*: `viz name => field_name, optional copy Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, optional copy $value_type:ty) => {
+        $crate::with!($fn_vis $fn_name => $field_name, optional $value_type);
+        $crate::get_and_set!($fn_vis $fn_name => $field_name, optional copy $value_type);
+    };
+    // Case (6) without *field name*: `viz name => optional copy Type`
+    ($fn_vis:vis $name:ident => optional copy $value_type:ty) => {
+        $crate::with_get_and_set!($fn_vis $name => $name, optional copy $value_type);
+    };
+    // (7) Case (5) with *into*: `viz name => field_name, optional into Type`
+    ($fn_vis:vis $fn_name:ident => $field_name:ident, optional into $value_type:ty) => {
+        $crate::with!($fn_vis $fn_name => $field_name, optional into $value_type);
+        $crate::get_and_set!($fn_vis $fn_name => $field_name, optional into $value_type);
+    };
+    // Case (7) without *field name*: `viz name => optional into Type`
+    ($fn_vis:vis $name:ident => optional into $value_type:ty) => {
+        $crate::with_get_and_set!($fn_vis $name => $name, optional into $value_type);
     };
 }
 
@@ -1317,15 +1479,14 @@ macro_rules! with_get_and_set {
 ///
 #[macro_export]
 macro_rules! get_set_and_unset {
-    // Base case: `viz name => Type`
-    ($fn_vis:vis $name:ident => $value_type:ty) => {
-        $crate::get_and_set!($fn_vis $name => optional $value_type);
-        $crate::unset!($fn_vis $name);
-    };
-    // Base case with *field name*: `viz name => field_name, Type`
+    // Base case: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
         $crate::get_and_set!($fn_vis $fn_name => $field_name, optional $value_type);
         $crate::unset!($fn_vis $fn_name => $field_name);
+    };
+    // Base case without *field name*: `viz name => Type`
+    ($fn_vis:vis $name:ident => $value_type:ty) => {
+        $crate::get_set_and_unset!($fn_vis $name => $name, $value_type);
     };
 }
 
@@ -1384,15 +1545,14 @@ macro_rules! get_set_and_unset {
 ///
 #[macro_export]
 macro_rules! with_get_set_and_unset {
-    // Base case: `viz name => Type`
-    ($fn_vis:vis $name:ident => $value_type:ty) => {
-        $crate::with_get_and_set!($fn_vis $name => optional $value_type);
-        $crate::unset!($fn_vis $name);
-    };
-    // Base case with *field name*: `viz name => field_name, Type`
+    // Base case: `viz name => field_name, Type`
     ($fn_vis:vis $fn_name:ident => $field_name:ident, $value_type:ty) => {
         $crate::with_get_and_set!($fn_vis $fn_name => $field_name, optional $value_type);
         $crate::unset!($fn_vis $fn_name => $field_name);
+    };
+    // Base case with *field name*: `viz name => Type`
+    ($fn_vis:vis $name:ident => $value_type:ty) => {
+        $crate::with_get_set_and_unset!($fn_vis $name => $name, $value_type);
     };
 }
 

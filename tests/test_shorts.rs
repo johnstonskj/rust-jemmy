@@ -98,6 +98,34 @@ fn test_get_optional_case_rename() {
     assert_eq!(address.street_2(), Some(&EX_STREET_LINE_2.to_string()));
 }
 
+#[test]
+fn test_get_optional_copy_case() {
+    pub struct Address {
+        unit: Option<u32>,
+    }
+    impl Address {
+        get!(pub unit => optional copy u32);
+    }
+
+    let address = Address { unit: Some(24) };
+    assert_eq!(address.unit(), Some(24));
+}
+
+#[test]
+fn test_get_optional_copy_case_rename() {
+    pub struct Address {
+        unit_number: Option<u32>,
+    }
+    impl Address {
+        get!(pub unit => unit_number, optional copy u32);
+    }
+
+    let address = Address {
+        unit_number: Some(24),
+    };
+    assert_eq!(address.unit(), Some(24));
+}
+
 // ------------------------------------------------------------------------------------------------
 // Test Cases ❱ Structures ❱ get_mut!
 // ------------------------------------------------------------------------------------------------
@@ -136,6 +164,138 @@ fn test_get_mut_base_case_rename() {
     assert_eq!(line_1, EX_STREET_LINE_1);
     line_1.replace_range(0.., "202 My Street");
     assert_eq!(line_1, "202 My Street");
+}
+
+// ------------------------------------------------------------------------------------------------
+// Test Cases ❱ Structures ❱ set!
+// ------------------------------------------------------------------------------------------------
+
+#[test]
+fn test_set_base_case() {
+    #[derive(Default)]
+    struct Address {
+        street_1: String,
+    }
+    impl Address {
+        set!(pub street_1 => String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(address.street_1.as_str(), "");
+    address.set_street_1(EX_STREET_LINE_1.to_string());
+    assert_eq!(address.street_1.as_str(), EX_STREET_LINE_1);
+}
+
+#[test]
+fn test_set_base_case_rename() {
+    #[derive(Default)]
+    struct Address {
+        street_line_1: String,
+    }
+    impl Address {
+        set!(pub street_1 => street_line_1, String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(address.street_line_1.as_str(), "");
+    address.set_street_1(EX_STREET_LINE_1.to_string());
+    assert_eq!(address.street_line_1.as_str(), EX_STREET_LINE_1);
+}
+
+#[test]
+fn test_set_into_case() {
+    #[derive(Default)]
+    struct Address {
+        street_1: String,
+    }
+    impl Address {
+        set!(pub street_1 => into String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(address.street_1.as_str(), "");
+    address.set_street_1(EX_STREET_LINE_1);
+    assert_eq!(address.street_1.as_str(), EX_STREET_LINE_1);
+}
+
+#[test]
+fn test_set_into_case_rename() {
+    #[derive(Default)]
+    struct Address {
+        street_line_1: String,
+    }
+    impl Address {
+        set!(pub street_1 => street_line_1, into String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(address.street_line_1.as_str(), "");
+    address.set_street_1(EX_STREET_LINE_1);
+    assert_eq!(address.street_line_1.as_str(), EX_STREET_LINE_1);
+}
+
+#[test]
+fn test_set_optional_case() {
+    #[derive(Default)]
+    struct Address {
+        street_2: Option<String>,
+    }
+    impl Address {
+        set!(pub street_2 => optional String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(&address.street_2, &None);
+    address.set_street_2(EX_STREET_LINE_2.to_string());
+    assert_eq!(&address.street_2, &Some(EX_STREET_LINE_2.to_string()));
+}
+
+#[test]
+fn test_set_optional_case_rename() {
+    #[derive(Default)]
+    struct Address {
+        street_line_2: Option<String>,
+    }
+    impl Address {
+        set!(pub street_2 => street_line_2, optional String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(&address.street_line_2, &None);
+    address.set_street_2(EX_STREET_LINE_2.to_string());
+    assert_eq!(&address.street_line_2, &Some(EX_STREET_LINE_2.to_string()));
+}
+
+#[test]
+fn test_set_optional_into_case() {
+    #[derive(Default)]
+    struct Address {
+        street_2: Option<String>,
+    }
+    impl Address {
+        set!(pub street_2 => optional into String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(&address.street_2, &None);
+    address.set_street_2(EX_STREET_LINE_2);
+    assert_eq!(&address.street_2, &Some(EX_STREET_LINE_2.to_string()));
+}
+
+#[test]
+fn test_set_optional_into_case_rename() {
+    #[derive(Default)]
+    struct Address {
+        street_line_2: Option<String>,
+    }
+    impl Address {
+        set!(pub street_2 => street_line_2, optional into String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(&address.street_line_2, &None);
+    address.set_street_2(EX_STREET_LINE_2);
+    assert_eq!(&address.street_line_2, &Some(EX_STREET_LINE_2.to_string()));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -266,6 +426,34 @@ fn test_with_optional_case_rename() {
     assert_eq!(&address.street_line_2, &Some(EX_STREET_LINE_1.to_string()));
 }
 
+#[test]
+fn test_with_optional_into_case() {
+    #[derive(Default)]
+    pub struct Address {
+        street_2: Option<String>,
+    }
+    impl Address {
+        with!(pub street_2 => optional into String);
+    }
+
+    let address = Address::default().with_street_2(EX_STREET_LINE_1);
+    assert_eq!(&address.street_2, &Some(EX_STREET_LINE_1.to_string()));
+}
+
+#[test]
+fn test_with_optional_into_case_rename() {
+    #[derive(Default)]
+    pub struct Address {
+        street_line_2: Option<String>,
+    }
+    impl Address {
+        with!(pub street_2 => street_line_2, optional into String);
+    }
+
+    let address = Address::default().with_street_2(EX_STREET_LINE_1);
+    assert_eq!(&address.street_line_2, &Some(EX_STREET_LINE_1.to_string()));
+}
+
 // ------------------------------------------------------------------------------------------------
 // Test Cases ❱ Structures ❱ Combinators ❱ get_and_set!
 // ------------------------------------------------------------------------------------------------
@@ -363,6 +551,70 @@ fn test_get_and_set_optional_case_rename() {
     let mut address = Address::default();
     assert_eq!(address.street_2(), None);
     address.set_street_2(EX_STREET_LINE_2.to_string());
+    assert_eq!(address.street_2(), Some(&EX_STREET_LINE_2.to_string()));
+}
+
+#[test]
+fn test_get_and_set_optional_copy_case() {
+    #[derive(Default)]
+    pub struct Address {
+        unit: Option<u32>,
+    }
+    impl Address {
+        get_and_set!(pub unit => optional copy u32);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(address.unit(), None);
+    address.set_unit(24);
+    assert_eq!(address.unit(), Some(24));
+}
+
+#[test]
+fn test_get_and_set_optional_copy_case_rename() {
+    #[derive(Default)]
+    pub struct Address {
+        unit_number: Option<u32>,
+    }
+    impl Address {
+        get_and_set!(pub unit => unit_number, optional copy u32);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(address.unit(), None);
+    address.set_unit(24);
+    assert_eq!(address.unit(), Some(24));
+}
+
+#[test]
+fn test_get_and_set_optional_into_case() {
+    #[derive(Default)]
+    pub struct Address {
+        street_2: Option<String>,
+    }
+    impl Address {
+        get_and_set!(pub street_2 => optional into String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(address.street_2(), None);
+    address.set_street_2(EX_STREET_LINE_2);
+    assert_eq!(address.street_2(), Some(&EX_STREET_LINE_2.to_string()));
+}
+
+#[test]
+fn test_get_and_set_optional_into_case_rename() {
+    #[derive(Default)]
+    pub struct Address {
+        street_line_2: Option<String>,
+    }
+    impl Address {
+        get_and_set!(pub street_2 => street_line_2, optional into String);
+    }
+
+    let mut address = Address::default();
+    assert_eq!(address.street_2(), None);
+    address.set_street_2(EX_STREET_LINE_2);
     assert_eq!(address.street_2(), Some(&EX_STREET_LINE_2.to_string()));
 }
 
