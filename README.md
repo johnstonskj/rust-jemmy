@@ -1,6 +1,7 @@
 # Package rust-jemmy
 
-This package provides a coherent set of manual accessor macros for fields in structures and variants in enums.
+This package provides a coherent set of macros that *manually* generate accessor
+methods for fields in structures and variants in enums.
 
 [![Apache-2.0 License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![MIT License](https://img.shields.io/badge/license-mit-118811.svg)](https://opensource.org/license/mit)
@@ -9,22 +10,25 @@ This package provides a coherent set of manual accessor macros for fields in str
 [![Coverage Status](https://codecov.io/gh/johnstonskj/rust-jemmy/branch/main/graph/badge.svg?token=1HGN6M4KIT)](https://codecov.io/gh/johnstonskj/rust-jemmy)
 [![Stargazer Count](https://img.shields.io/github/stars/johnstonskj/rust-jemmy.svg)](https://github.com/johnstonskj/rust-jemmy/stargazers)
 
-While a number of packages exist to simplify the addition of accessors to Rust structures and enumerations
-these are often derive macros that come with a trade-off between flexibility and control. Jemmy takes a
-different and more flexible approach. It provides a set of very simple leaf macros and then aggregate
-macros that build common patterns from these building blocks. For example, you can add `get_and_set`
-methods for a simple field, or `with_get_and_set` to include an initializer as well. You can use the
-`get_set_and_unset` for optional fields which produces `foo() -> Option<&T>`, `set_foo(T)`, and `unset_foo()`
+While a number of packages exist to simplify the addition of accessors to Rust
+structures and enumerations these are often derive macros that come with a
+trade-off between flexibility and control. Jemmy takes a different and more
+flexible approach. It provides a set of very simple leaf macros and then
+aggregate macros that build common patterns from these building blocks. For
+example, you can add `get_and_set` methods for a simple field, or `with_get_and_set`
+to include an initializer as well. You can use the `get_set_and_unset` for
+optional fields which produces `foo() -> Option<&T>`, `set_foo(T)`, and `unset_foo()`
 methods rather than a setter that takes an `Option<T>`.
 
-The name Jemmy was chosen for this crate as the common name for a small pry-bar or crowbar used in burglary,
-a very direct form of *manual access*.
+The name Jemmy was chosen for this crate as the common name for a small pry-bar
+or crowbar used in burglary, a very direct form of *manual access*.
 
 ## Example 1 - Structures
 
-The following shows the basics of the macros for generating accessors for the fields of a structure. This
-will provide initializers, getters and setters for the `number_on_street` and `street_1` fields. A getter,
-setter (value) and unsetter (`None`) will be provided for the `street_2` field.
+The following shows the basics of the macros for generating accessor methods for
+the fields of a structure. This generates *init*ializer, *get*ter and *set*ter methods
+for the `number_on_street` and `street_1` fields. And generates *get*ter, *set*ter
+(value) and *un-set*ter (`None`) methods for the `street_2` field.
 
 ```rust
 use jemmy::*;
@@ -49,8 +53,9 @@ impl Address {
 
 ## Example 2 - Enums
 
-The following shows the basics of the macros for generating accessors for the variants of an enum. For
-each variant an `is_variant` predicate and `as_variant` cast methods are provided.
+The following shows the basics of the macros for generating accessor methods
+for the variants of an enum. For each variant an `is_variant` predicate and
+`as_variant` cast methods are provided.
 
 ```rust
 # pub struct Address(String);
@@ -73,8 +78,9 @@ impl TypedAddress {
 
 ## Standard Forms
 
-The following are the primary forms supported by the macros in the crate; the first is the form of
-all field macros, the second is the form of all variant macros.
+The following are the primary forms supported by the macros in the crate; the
+first is the form of all field macros, the second is the form of all variant
+macros.
 
 1. `(viz name => [field_name,] [keywords] [type])`
 2. `(viz enum, variant [=> type])`
@@ -84,17 +90,17 @@ The elements of these forms are described below.
 1. **viz**; the vizibility specifier for the generated method.
 2. for field macros:
    1. **name**;
-   2. **field name**; (optional) when the visible name of the field is different from its field
-      name you may specify both.
+   2. **field name**; (optional) when the visible name of the field is different
+      from its field name you may specify both.
    3. **keywords** (optional):
-      1. **copy**; denotes that the field type implements `Copy` and the generatted method will
-         return a value rather than a reference.
-      1. **into**; will generate a setter method that takes a parameter of type `Into<T>` rather
-         than the typical `T`.
-      2. **optional**; denotes that the field is an `Option<T>` not `T` which affects all getters
-         and setters.
-   4. **type**; (optional) the type of the field, specifically `T`, *do not* specify `Option<T>` or
-      `Into<T>` if using the corresponding keywords.
+      1. **copy**; denotes that the field type implements `Copy` and the generatted
+         method will return a value rather than a reference.
+      1. **into**; will generate a setter method that takes a parameter of type
+         `Into<T>` rather than the typical `T`.
+      2. **optional**; denotes that the field is an `Option<T>` not `T` which affects
+         all getters and setters.
+   4. **type**; (optional) the type of the field, specifically `T`, *do not* specify
+      `Option<T>` or `Into<T>` if using the corresponding keywords.
 3. for enum macros:
    1. **enum**; the enum type's identifier.
    2. **variant**; the variant's identifier within the enum.
@@ -102,8 +108,8 @@ The elements of these forms are described below.
 
 ### Structure Fields Macro Summary
 
-| Macro    | field name       | keywords | type   | generated signature                                                 |
-|----------|------------------|----------|--------|---------------------------------------------------------------------|
+| Macro  | field name       | keywords | type   | generated signature |
+|--------|------------------|----------|--------|---------------------|
 | `with!`  | number_on_street |          | u32    | `fn with_number_on_street(mut self, number_on_street: u32) -> Self` |
 | `with!`  | street_1         | into     | String | `fn with_street_1<T: Into<String>(mut self, street_1: T) -> Self`   |
 | `with!`  | street_2         | optional | String | `fn with_street_2(mut self, street_2: String) -> Self`              |
@@ -117,8 +123,8 @@ The elements of these forms are described below.
 
 ### Enum Variants Macro Summary
 
-| Macro                   | variant name | keywords | type | generated signature                                  |
-|-------------------------|--------------|----------|------|------------------------------------------------------|
+| Macro                 | variant name | keywords | type | generated signature |
+|-----------------------|--------------|----------|------|---------------------|
 | `impl_from_for_variant` | Home         |       | Address | `impl From<Address> for TypedAddress {}`             |
 | `impl_from_for_variant` | Home         | into  | Address | `impl<T: Into<Address>> From<T> for TypedAddress {}` |
 | `is_variant!`           | Home         |       | Address | `const fn is_home(&self) -> bool`                    |
