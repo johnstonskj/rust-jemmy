@@ -160,6 +160,8 @@ fn test_as_variant_copy_case_rename() {
 }
 
 #[test]
+#[allow(clippy::let_unit_value)]
+#[allow(clippy::unit_cmp)]
 fn test_as_variant_empty_case() {
     pub enum TypedAddress {
         Unknown,
@@ -174,6 +176,8 @@ fn test_as_variant_empty_case() {
 }
 
 #[test]
+#[allow(clippy::let_unit_value)]
+#[allow(clippy::unit_cmp)]
 fn test_as_variant_empty_case_rename() {
     pub enum TypedAddress {
         Unknown,
@@ -188,6 +192,8 @@ fn test_as_variant_empty_case_rename() {
 }
 
 #[test]
+#[allow(clippy::let_unit_value)]
+#[allow(clippy::unit_cmp)]
 fn test_as_variant_empty_2_case() {
     pub enum TypedAddress {
         Unknown,
@@ -202,6 +208,8 @@ fn test_as_variant_empty_2_case() {
 }
 
 #[test]
+#[allow(clippy::let_unit_value)]
+#[allow(clippy::unit_cmp)]
 fn test_as_variant_empty_2_case_rename() {
     pub enum TypedAddress {
         Unknown,
@@ -226,7 +234,7 @@ fn test_as_variant_value_case() {
 
     let address = TypedAddress::Unknown;
     let actual = address.as_unknown().unwrap();
-    assert_eq!(actual, true);
+    assert!(actual);
 }
 
 #[test]
@@ -240,7 +248,7 @@ fn test_as_variant_value_case_rename() {
 
     let address = TypedAddress::Unknown;
     let actual = address.as_not_known().unwrap();
-    assert_eq!(actual, true);
+    assert!(actual);
 }
 
 #[test]
