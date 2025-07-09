@@ -70,7 +70,7 @@ jobs:
         
   test:
     name: Test
-    needs: [rustfmt, clippy]
+    needs: [rustfmt, check, clippy]
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
@@ -106,7 +106,7 @@ jobs:
       
   benchmarks:
     name: Benchmarks
-    needs: [rustfmt, clippy, check_tests]
+    needs: [rustfmt, check, clippy, check_tests]
     if: needs.check_tests.outputs.has_benchmarks
     strategy:
       matrix:
@@ -135,7 +135,7 @@ jobs:
       
   examples:
     name: Examples
-    needs: [rustfmt, clippy, check_tests]
+    needs: [rustfmt, check, clippy, check_tests]
     if: needs.check_tests.outputs.has_examples
     runs-on: ubuntu-latest
     strategy:
@@ -184,7 +184,10 @@ jobs:
         run: cargo install cargo-tarpaulin --version '0.32.8'
 
       - name: Run cargo-tarpaulin
-        run: cargo tarpaulin --config .tarpaulin.toml'
+        uses: actions-rs/cargo@v1.0.1
+        with:
+          command: tarpaulin
+          args: --config .tarpaulin.toml
 
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v5.4.3
@@ -225,7 +228,7 @@ jobs:
 
       
   rustfmt:
-    name: rustfmt
+    name: Rust Format
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -248,11 +251,43 @@ jobs:
         args: --all -- --check
 
       
+  check:
+    name: Cargo Check
+    strategy:
+      matrix:
+        test-features: ["", "--all-features", "--no-default-features"]
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -Dwarnings
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4.2.2
+      
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1.0.6
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+              
+    - uses: Swatinem/rust-cache@v2.8.0
+
+    - name: Check well-formedness rules
+      uses: actions-rs/cargo@v1.0.1
+      with:
+        command: check
+        args: --workspace --future-incompat-report ${{ matrix.test-features }} --all-targets
+  
   clippy:
-    name: clippy
+    name: Clippy
+    strategy:
+      matrix:
+        test-features: ["", "--all-features", "--no-default-features"]
     runs-on: ubuntu-latest
     permissions:
       checks: write
+    env:
+      RUSTFLAGS: -Dwarnings
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4.2.2
@@ -267,7 +302,8 @@ jobs:
               
     - uses: Swatinem/rust-cache@v2.8.0
 
-    - uses: actions-rs/clippy-check@v1.0.7
+    - name: Check well-formedness rules
+      uses: actions-rs/cargo@v1.0.1
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --workspace --no-deps --all-features --all-targets -- -D warnings
+        command: clippy
+        args: --workspace --no-deps ${{ matrix.test-features }} --all-targets
