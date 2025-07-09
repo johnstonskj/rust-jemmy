@@ -1,0 +1,6 @@
+[default]
+verbose = true
+all-features = true
+workspace = false
+test-timeout = "30s"
+out = ["Xml"]

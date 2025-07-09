@@ -1,6 +1,6 @@
 [package]
 name = "jemmy"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 description = "This package provides a coherent set of manual accessor macros."
 documentation = "https://docs.rs/jemmy/"

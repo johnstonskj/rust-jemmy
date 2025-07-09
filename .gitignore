@@ -60,6 +60,8 @@ flycheck_*.el
 # More information here https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
 Cargo.lock
 
+/cobertura.xml
+
 ### vscode ###
 
 .vscode/*

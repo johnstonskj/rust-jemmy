@@ -137,6 +137,12 @@ The elements of these forms are described below.
 
 ## Changes
 
+### Version 0.1.6
+
+* Fix: converted action workflow to use a config file for tarpaulin.
+* Refactor: broke apart the monolithic `lib.rs` into a hierarchy of modules.
+* Refactor: followed the same for test modules.
+
 ### Version 0.1.5
 
 * Fix: macro implementations:
