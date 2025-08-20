@@ -372,8 +372,59 @@ macro_rules! as_variant {
     };
 }
 
+///
+///  Generate a mutable *safe cast* method for variant-associated data.
+///
+/// ## Forms
+///
+/// ### `as_variant_mut!(viz Variant [, function_name] => Type)`
+///
+/// TBD
+///
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// # pub struct Address(String);
+/// pub enum TypedAddress {
+///     Home(Address),
+/// }
+/// impl TypedAddress {
+///     // as_variant_mut!(pub Home => Address);
+///
+///     /// If `self` is an instance of the `Home` variant, which holds a value of type
+///     /// `Address`, return a mutable reference `Some(&mut Address)`, else `None`.
+///     pub const fn as_home_mut(&mut self) -> Option<&mut Address> {
+///         match self {
+///             Self::Home(ref mut value) => Some(value),
+///             _ => None,
+///         }
+///     }
+/// }
+/// ```
+///
+#[macro_export]
+macro_rules! as_variant_mut {
+    ($fn_vis:vis $variant_name:ident, $function_name:ident => $variant_type:ty) => {
+        paste::paste! {
+            #[doc = "If `self` is an instance of the `" $variant_name "` variant, which holds a value of type `"
+                    $variant_type "`, return a mutable reference `Some(&mut " $variant_type ")`, else `None`."]
+            $fn_vis const fn [< as_ $function_name:snake _mut >](&mut self) -> Option<&mut $variant_type> {
+                match self {
+                    Self::$variant_name(ref mut value) => Some(value),
+                    _ => None,
+                }
+            }
+        }
+    };
+    // Case (2) without *function_name*: `viz Variant => Type`
+    ($fn_vis:vis $variant_name:ident => $variant_type:ty) => {
+        $crate::as_variant_mut!($fn_vis $variant_name, $variant_name => $variant_type);
+    };
+}
+
 // ------------------------------------------------------------------------------------------------
 // Re-export macros
 // ------------------------------------------------------------------------------------------------
 
-pub use crate::{as_variant, is_variant};
+pub use crate::{as_variant, as_variant_mut, is_variant};

@@ -8,11 +8,12 @@
 // ------------------------------------------------------------------------------------------------
 
 ///
-///  Generate both [`is_variant`] and [`as_variant`] for an enumeration variant.
+/// Generate both [`is_variant`] and [`as_variant`], and possibly [`as_variant_mut`] for an
+/// enumeration variant.
 ///
 /// ## Forms
 ///
-/// ### `is_as_variant!(viz Enum, Variant => Type)`
+/// ### `is_as_variant!(viz Variant [, function_name] => Type)`
 ///
 /// This form generates both `is_variant` and `as_variant` for the applicable cases.
 ///
@@ -32,7 +33,7 @@
 /// }
 /// ```
 ///
-/// ### `is_as_variant!(viz Enum, Variant => copy Type)`
+/// ### `is_as_variant!(viz Variant [, function_name] => copy Type)`
 ///
 /// This form generates both `is_variant` and `as_variant` for the applicable cases.
 ///
@@ -51,6 +52,29 @@
 ///
 ///     is_variant!(pub XRef => u64);
 ///     as_variant!(pub XRef => copy u64);
+/// }
+/// ```
+///
+///
+/// ### `is_as_variant!(viz Variant [, function_name] => mut Type)`
+///
+/// This form generates both `is_variant`, `as_variant`, and `as_variant_mut` for the
+/// applicable cases.
+///
+/// The following — commented line and following implementation — are therefore equivalent:
+///
+/// ```rust
+/// use jemmy::*;
+/// # pub struct Address(String);
+/// pub enum TypedAddress {
+///     Unparsed(String),
+/// }
+/// impl TypedAddress {
+///     // is_as_variant!(pub mut Unparsed => String);
+///
+///     is_variant!(pub Unparsed => String);
+///     as_variant!(pub Unparsed => String);
+///     as_variant_mut!(pub Unparsed => String);
 /// }
 /// ```
 ///
@@ -78,6 +102,19 @@ macro_rules! is_as_variant {
     // Case (2) without *function_name*: `viz Variant => copy Type`
     ($fn_vis:vis $variant_name:ident => copy $variant_type:ty) => {
         $crate::is_as_variant!($fn_vis $variant_name, $variant_name => copy $variant_type);
+    };
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // (3) Base case with *copy*: `viz Variant as function_name => copy Type`
+    ($fn_vis:vis mut $variant_name:ident, $function_name:ident => $variant_type:ty) => {
+        paste::paste! {
+            $crate::is_variant!($fn_vis $variant_name, $function_name => $variant_type);
+            $crate::as_variant!($fn_vis $variant_name, $function_name => $variant_type);
+            $crate::as_variant_mut!($fn_vis $variant_name, $function_name => $variant_type);
+        }
+    };
+    // Case (3) without *function_name*: `viz Variant => copy Type`
+    ($fn_vis:vis mut $variant_name:ident => $variant_type:ty) => {
+        $crate::is_as_variant!($fn_vis mut $variant_name, $variant_name => $variant_type);
     };
 }
 
