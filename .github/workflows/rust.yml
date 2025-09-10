@@ -44,7 +44,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Check publish
-      uses: actions-rs/cargo@v1.0.1
+      uses: actions-rs/cargo@v1.0.3
       with:
         command: publish
         args: --package ${{ matrix.package}} --dry-run
@@ -92,13 +92,13 @@ jobs:
     - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Build
-      uses: actions-rs/cargo@v1.0.1
+      uses: actions-rs/cargo@v1.0.3
       with:
         command: build
         args: --workspace ${{ matrix.test-features }}
       
     - name: Test
-      uses: actions-rs/cargo@v1.0.1
+      uses: actions-rs/cargo@v1.0.3
       with:
         command: test
         args: --workspace ${{ matrix.test-features }}
@@ -127,7 +127,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Run benchmarks with all features
-      uses: actions-rs/cargo@v1.0.1
+      uses: actions-rs/cargo@v1.0.3
       with:
         command: test
         args: --workspace --benches --all-features --no-fail-fast
@@ -156,7 +156,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Run examples with all features
-      uses: actions-rs/cargo@v1.0.1
+      uses: actions-rs/cargo@v1.0.3
       with:
         command: test
         args: --workspace --examples --all-features --no-fail-fast
@@ -184,7 +184,7 @@ jobs:
         run: cargo install cargo-tarpaulin --version '0.32.8'
 
       - name: Run cargo-tarpaulin
-        uses: actions-rs/cargo@v1.0.1
+        uses: actions-rs/cargo@v1.0.3
         with:
           command: tarpaulin
           args: --config .tarpaulin.toml
@@ -219,7 +219,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2.8.0
       
     - name: Generate documentation
-      uses: actions-rs/cargo@v1.0.1
+      uses: actions-rs/cargo@v1.0.3
       env:
         RUSTDOCFLAGS: -D warnings
       with:
@@ -245,7 +245,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2.8.0
 
     - name: Check formatting
-      uses: actions-rs/cargo@v1.0.1
+      uses: actions-rs/cargo@v1.0.3
       with:
         command: fmt
         args: --all -- --check
@@ -273,7 +273,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2.8.0
 
     - name: Check well-formedness rules
-      uses: actions-rs/cargo@v1.0.1
+      uses: actions-rs/cargo@v1.0.3
       with:
         command: check
         args: --workspace --future-incompat-report ${{ matrix.test-features }} --all-targets
@@ -303,7 +303,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2.8.0
 
     - name: Check well-formedness rules
-      uses: actions-rs/cargo@v1.0.1
+      uses: actions-rs/cargo@v1.0.3
       with:
         command: clippy
         args: --workspace --no-deps ${{ matrix.test-features }} --all-targets
