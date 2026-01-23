@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5.0.0
+      uses: actions/checkout@v6.0.2
       
     - name: Install Rust
       uses: actions-rs/toolchain@v1.0.7
@@ -80,7 +80,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5.0.0
+      uses: actions/checkout@v6.0.2
       
     - name: Install Rust
       uses: actions-rs/toolchain@v1.0.7
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5.0.0
+      uses: actions/checkout@v6.0.2
       
     - name: Install Rust
       uses: actions-rs/toolchain@v1.0.7
@@ -144,7 +144,7 @@ jobs:
         rust: ["stable"]
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5.0.0
+      uses: actions/checkout@v6.0.2
       
     - name: Install Rust
       uses: actions-rs/toolchain@v1.0.7
@@ -172,7 +172,7 @@ jobs:
         rust: ["stable"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v6.0.2
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1.0.7
@@ -207,7 +207,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5.0.0
+      uses: actions/checkout@v6.0.2
       
     - name: Install Rust
       uses: actions-rs/toolchain@v1.0.7
@@ -232,7 +232,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5.0.0
+      uses: actions/checkout@v6.0.2
       
     - name: Install Rust
       uses: actions-rs/toolchain@v1.0.7
@@ -261,7 +261,7 @@ jobs:
       RUSTFLAGS: -Dwarnings
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5.0.0
+      uses: actions/checkout@v6.0.2
       
     - name: Install Rust
       uses: actions-rs/toolchain@v1.0.7
@@ -290,7 +290,7 @@ jobs:
       RUSTFLAGS: -Dwarnings
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5.0.0
+      uses: actions/checkout@v6.0.2
       
     - name: Install Rust
       uses: actions-rs/toolchain@v1.0.7
